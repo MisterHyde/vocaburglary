@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>472</width>
+    <height>865</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Vocable Training</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QFrame" name="addFrame">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>170</y>
+      <width>441</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="midLineWidth">
+     <number>1</number>
+    </property>
+    <widget class="QLineEdit" name="inKommentar">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>70</y>
+       <width>113</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="kommentarLabel">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>81</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Kommentar:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonINSERT">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>110</y>
+       <width>81</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>INSERT</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="inIn">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>30</y>
+       <width>113</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="inAus">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>30</y>
+       <width>113</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="inlandischLabel">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>40</y>
+       <width>71</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>inländisch:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="auslandischLabel">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>40</y>
+       <width>81</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ausländisch:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="kommentarLabel_2">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>70</y>
+       <width>81</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Kommentar:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="ausKommentar">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>70</y>
+       <width>113</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="startFrame">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>790</y>
+      <width>441</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>161</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Neue Wörter einfügen</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>10</y>
+       <width>111</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Wörter üben</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_3">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>10</y>
+       <width>111</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Wörter lernen</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="learnFrame">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>441</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <widget class="QLineEdit" name="translation">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>50</y>
+       <width>113</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="vocable">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>181</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="checkPushButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>90</y>
+       <width>81</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Check</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="nextPushButton">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>90</y>
+       <width>81</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Next</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="successLabel">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>50</y>
+       <width>281</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Just start with something easy.</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QTableWidget" name="vocableTable">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>441</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>Ausländisch</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Inländisch</string>
+     </property>
+    </column>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
