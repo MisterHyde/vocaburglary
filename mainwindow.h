@@ -39,6 +39,7 @@ private:
     const int gap = 10;
 
     void updateVocRecords();
+    void hideFrames(int number);
 
 public slots:
     void getVocs(bool);     ///< Loads a record of voc from the database
@@ -47,6 +48,8 @@ public slots:
     void addVoc(bool);      ///< Shows the ui for adding a voc
     void insert(bool);      ///< Inserts a pair of voc from the user input to the database
     void showList(bool);    ///< Shows a list with all loaded voc
+    void hideIrregular(int check);
+    void resizeWindow();
 };
 
 #endif // MAINWINDOW_H

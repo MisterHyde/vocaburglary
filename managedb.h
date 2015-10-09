@@ -17,7 +17,8 @@ class Managedb
 
     bool insertRec(QString in, QString aus, QString commentin, QString commentaus);
     QList<QStringList> getVocs();
-    bool updateRec(QString in, QString aus, bool right);
+    bool updateRecRank(QString in, QString aus, bool right);
+    bool updateRecAusland(QString aus, QString in);
 
  private:
     QSqlDatabase db;

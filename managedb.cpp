@@ -13,7 +13,7 @@ Managedb::Managedb()
 
 // The first two parameters specifing the primary key
 // The third specify if the the attribute rightt or wrong should be incremented
-bool Managedb::updateRec(QString in, QString aus, bool right)
+bool Managedb::updateRecRank(QString in, QString aus, bool right)
 {
     QString queryString;
     QVariant qvIn(in);
@@ -32,7 +32,7 @@ bool Managedb::updateRec(QString in, QString aus, bool right)
     query.bindValue(QString(":aus"), qvAus);
     query.exec();
 
-    return true;
+    return query.isActive();
 }
 
 bool Managedb::insertRec(QString in, QString aus, QString commentin, QString commentaus)
@@ -53,7 +53,7 @@ bool Managedb::insertRec(QString in, QString aus, QString commentin, QString com
 
     qDebug() << "insertRec: " << in << aus << commentin << commentaus;
 
-    return true;
+    return query.isActive();
 }
 
 QList<QStringList> Managedb::getVocs()
@@ -62,17 +62,19 @@ QList<QStringList> Managedb::getVocs()
     QStringList ausland;
     QStringList commentin;
     QStringList commentaus;
+    QStringList right;
     QList<QStringList> records;
     QList<int> intList;
     int listCount;
 
-    QSqlQuery query("SELECT inland,ausland,commentin,commentaus FROM words;");
+    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM words;");
 
     while(query.next()) {
         inland.append(query.value(0).toString());
         ausland.append(query.value(1).toString());
         commentin.append(query.value(2).toString());
         commentaus.append(query.value(3).toString());
+        right.append(query.value(4).toString());
     }
 
     // If the two columns "inland" and "ausland" contains a different amount of items: return false
@@ -109,4 +111,14 @@ QList<QStringList> Managedb::getVocs()
     records << inland << ausland << commentin << commentaus;
 
     return records;
+}
+
+bool Managedb::updateRecAusland(QString aus, QString in)
+{
+    QString bubl = "UPDATE words SET ausland='" + aus + "' where inland='" + in + "';";
+    qDebug() << bubl;
+    QSqlQuery query(bubl);
+    query.exec();
+
+    return query.isActive();
 }
