@@ -14,10 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    managedb.cpp
+    managedb.cpp \
+    customfunctions.cpp
 
 HEADERS  += mainwindow.h \
-    managedb.h
+    managedb.h \
+    customfunctions.h
 
 FORMS    += mainwindow.ui
 

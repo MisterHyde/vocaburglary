@@ -17,11 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
     updateVocRecords();
 
     connect(ui->pushButtonINSERT, SIGNAL(clicked(bool)), this, SLOT(insert(bool)));
-    connect(ui->pushButton_2, SIGNAL(clicked(bool)), this, SLOT(getVocs(bool)));
-    connect(ui->checkPushButton, SIGNAL(clicked(bool)), this, SLOT(checkVoc(bool)));
-    connect(ui->nextPushButton, SIGNAL(clicked(bool)), this, SLOT(nextVoc(bool)));
-    connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(addVoc(bool)));
-    connect(ui->pushButton_3, SIGNAL(clicked(bool)), this, SLOT(showList(bool)));
+    connect(ui->pushButtonStartExercise, SIGNAL(clicked(bool)), this, SLOT(startExercise(bool)));
+    connect(ui->pushButtonCheck, SIGNAL(clicked(bool)), this, SLOT(checkVoc(bool)));
+    connect(ui->pushButtonNext, SIGNAL(clicked(bool)), this, SLOT(nextVoc(bool)));
+    connect(ui->pushButtonStartInsert, SIGNAL(clicked(bool)), this, SLOT(addVoc(bool)));
+    connect(ui->pushButtonStartLearn, SIGNAL(clicked(bool)), this, SLOT(showList(bool)));
     connect(ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(hideIrregular(int)));
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 }
@@ -42,7 +42,7 @@ void MainWindow::showList(bool)
     hideFrames(2);
     ui->vocableTable->setGeometry(gap, gap, ui->vocableTable->geometry().width(), ui->centralWidget->height() - ui->startWidget->height() - ui->statusBar->height() + gap);
     ui->vocableTable->setGeometry(gap, gap, ui->centralWidget->width() - 2*gap,ui->startWidget->y() - 2*gap);
-    qDebug() << ui->centralWidget->height();
+    qDebug() << "height: " << ui->centralWidget->height();
     // Inserts in a QTableWidget as many items as the variable 'listCount' tells
     ui->vocableTable->setRowCount(listCount);
     for(int i=0; i<listCount; i++){
@@ -76,32 +76,12 @@ void MainWindow::insert(bool)
     }
 }
 
-// Makes the
-void MainWindow::getVocs(bool)
+// Shows the exercise frame and loads the first word pair
+void MainWindow::startExercise(bool)
 {
     hideFrames(1);
 
     this->nextVoc(true);
-}
-
-// Vergleicht ob der eingegebene Wert mit dem aktuellen Übersetztung, in currIn, übereinstimmt
-void MainWindow::checkVoc(bool)
-{
-    if(ui->translation->text() == currIn){
-        ui->successLabel->setText("YEAH!");
-        if(firstTry){
-            //db.updateRec(currIn, currAus, true);
-        }
-        nextVoc(false);
-    }
-    else{
-        ui->successLabel->setText("Falsch: " + currIn + ", " + currComIn);
-        //db.updateRec(currIn, currAus, false);
-        firstTry = false;
-    }
-
-    if(currIn == "")
-        qDebug() << db.updateRecAusland(ui->translation->text(), currAus);
 }
 
 // Loads one word pair out of the vocRecords
@@ -113,14 +93,51 @@ void MainWindow::nextVoc(bool)
     }
 
     firstTry = true;
-    currIn = vocRecords.at(1).at(listIterator);
-    currAus = vocRecords.at(0).at(listIterator);
-    currComIn = vocRecords.at(3).at(listIterator);
-    currComAus = vocRecords.at(2).at(listIterator);
+    QString buff = vocRecords.at(0).at(listIterator);
+    buff = buff.remove(" ");
+    currIn = buff.split(QRegExp("\\,"));
+    currAus = vocRecords.at(1).at(listIterator);
+    currComIn = vocRecords.at(2).at(listIterator);
+    currComAus = vocRecords.at(3).at(listIterator);
     listIterator += 1;
 
     ui->vocable->setText(currAus + currComAus);
     ui->translation->setText("");
+}
+
+// Compare if the user input is equal to the right translation, saved in "currIn"
+void MainWindow::checkVoc(bool)
+{
+    if(currIn.contains(ui->translation->text())){
+        if(currIn.size() > 1){
+            QString buff = "";
+            for(int i=0;i<currIn.size();++i){
+                if(currIn.at(i) != ui->translation->text()){
+                   buff += currIn.at(i);
+                   if(i != currIn.size()-1)
+                       buff += ", ";
+                }
+            }
+            ui->successLabel->setText("YEAH but also: " + buff);
+        }
+        else{
+            ui->successLabel->setText("YEAH!");
+        }
+        if(firstTry){
+            //db.updateRec(currIn, currAus, true);
+        }
+        nextVoc(false);
+    }
+    else{
+        if(!currComIn.isEmpty())
+            currComIn = ", " + currComIn;
+        ui->successLabel->setText("Falsch: " + CF::undoStringList(currIn) + currComIn);
+        //db.updateRec(currIn, currAus, false);
+        firstTry = false;
+    }
+
+    if(currIn.size() == 0)
+        qDebug() << "Update auslands Record: " << db.updateRecAusland(ui->translation->text(), currAus);
 }
 
 // Makes the "addWidget" visible and others invisible
@@ -134,6 +151,8 @@ void MainWindow::addVoc(bool)
 void MainWindow::updateVocRecords()
 {
     vocRecords = db.getVocs();
+    if(vocRecords.isEmpty())
+        qDebug() << "Hier ist ein Fehler passiert";
     listCount = vocRecords.at(0).count();
     newWords = false;
 }

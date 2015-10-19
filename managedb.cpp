@@ -1,13 +1,17 @@
 #include "managedb.h"
 
+/**
+ * @brief Managedb::Managedb
+ */
+
 Managedb::Managedb()
+    :tableOneName("vocabulary"), tableTwoName("irregular")
 {
     db = QSqlDatabase::addDatabase("QPSQL");
     db.setHostName("localhost");
-    db.setDatabaseName("dictionary");
+    db.setDatabaseName("englishdic");
     db.setUserName("felix");
-    db.setPassword("Supp3nG3!L");
-
+    db.setPassword("Augsburg13");
     db.open();
 }
 
@@ -20,10 +24,10 @@ bool Managedb::updateRecRank(QString in, QString aus, bool right)
     QVariant qvAus(aus);
 
     if(right){
-        queryString = "UPDATE words SET rightt = rightt + 1 where inland = :in AND ausland = :aus;";
+        queryString = "UPDATE " + tableOneName + " SET rightt = rightt + 1 where inland = :in AND ausland = :aus;";
     }
     else{
-        queryString = "UPDATE words SET wrong = wrong + 1 where inland = :in AND ausland = :aus;";
+        queryString = "UPDATE " + tableOneName + " vocabulary SET wrong = wrong + 1 where inland = :in AND ausland = :aus;";
     }
 
     QSqlQuery query;
@@ -35,6 +39,7 @@ bool Managedb::updateRecRank(QString in, QString aus, bool right)
     return query.isActive();
 }
 
+// Insert a new word pair with comments and set rank to zero
 bool Managedb::insertRec(QString in, QString aus, QString commentin, QString commentaus)
 {
     QVariant qvIn(in);
@@ -43,7 +48,7 @@ bool Managedb::insertRec(QString in, QString aus, QString commentin, QString com
     QVariant qvComAus(commentaus);
 
     QSqlQuery query;
-    query.prepare("INSERT INTO words (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
+    query.prepare("INSERT INTO  " + tableOneName + "  (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
                   "VALUES (:inland, :ausland, :commentin, :commentaus, 0, 0 ,0)");
     query.bindValue(QString(":inland"), QVariant(qvIn));
     query.bindValue(QString(":ausland"), QVariant(qvAus));
@@ -56,30 +61,32 @@ bool Managedb::insertRec(QString in, QString aus, QString commentin, QString com
     return query.isActive();
 }
 
+// Loads all records from the database and the list records which contains all words shuffled and in the follow data structure
+// records{ inland(QStringList), ausland(QStringList), commentIn(QStringList), commentAus(QStringList) }
 QList<QStringList> Managedb::getVocs()
 {
-    QStringList inland;
-    QStringList ausland;
-    QStringList commentin;
-    QStringList commentaus;
-    QStringList right;
+    QStringList inbuff;
+    QStringList ausbuff;
+    QStringList incombuff;
+    QStringList auscombuff;
+    QStringList rightbuff;
     QList<QStringList> records;
     QList<int> intList;
     int listCount;
 
-    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM words;");
+    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM " + tableOneName + ";");
 
     while(query.next()) {
-        inland.append(query.value(0).toString());
-        ausland.append(query.value(1).toString());
-        commentin.append(query.value(2).toString());
-        commentaus.append(query.value(3).toString());
-        right.append(query.value(4).toString());
+        inbuff.append(query.value(0).toString());
+        ausbuff.append(query.value(1).toString());
+        incombuff.append(query.value(2).toString());
+        auscombuff.append(query.value(3).toString());
+        rightbuff.append(query.value(4).toString());
     }
 
     // If the two columns "inland" and "ausland" contains a different amount of items: return false
-    listCount = inland.count();
-    if(listCount != ausland.count())
+    listCount = inbuff.count();
+    if(listCount != ausbuff.count())
         return records;
 
     // The range of the list goes from 0 to listCount-1
@@ -87,36 +94,34 @@ QList<QStringList> Managedb::getVocs()
         intList.append(i);
     }
 
-    qDebug() << "listCount(managedb): " << listCount;
-
-    // Shuffle all lists
+    // Shuffle the in the above step created intList.
     std::random_shuffle(intList.begin(),intList.end());
-    QStringList inbuff = inland;
-    QStringList ausbuff = ausland;
-    QStringList incombuff = commentin;
-    QStringList auscombuff = commentaus;
-    inland.clear();
-    ausland.clear();
-    commentin.clear();
-    commentaus.clear();
 
+    QStringList inland;
+    QStringList ausland;
+    QStringList commentin;
+    QStringList commentaus;
+    QStringList right;
+
+    // Use the shuffled intList to get shuffled word lists
     for(int i=0; i<listCount; i++){
         inland.insert(i, inbuff.at(intList.at(i)));
         ausland.insert(i, ausbuff.at(intList.at(i)));
         commentin.insert(i, incombuff.at(intList.at(i)));
         commentaus.insert(i, auscombuff.at(intList.at(i)));
+        right.insert(i, rightbuff.at(intList.at(i)));
     }
 
     // Save all columns in one list
-    records << inland << ausland << commentin << commentaus;
+    records << inland << ausland << commentin << commentaus << right;
 
     return records;
 }
 
 bool Managedb::updateRecAusland(QString aus, QString in)
 {
-    QString bubl = "UPDATE words SET ausland='" + aus + "' where inland='" + in + "';";
-    qDebug() << bubl;
+    QString bubl = "UPDATE " + tableOneName + " SET ausland='" + aus + "' where inland='" + in + "';";
+    qDebug() << "updateRecAusland: " << bubl;
     QSqlQuery query(bubl);
     query.exec();
 

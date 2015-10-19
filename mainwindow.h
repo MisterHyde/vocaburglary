@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include "managedb.h"
+#include "customfunctions.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,7 +27,8 @@ private:
     Ui::MainWindow *ui;
     Managedb db;
     QList<QStringList> vocRecords;  ///< List with all
-    QString currIn;         ///< Current word in first language
+//    QString currIn;         ///< Current word in first language
+    QStringList currIn;         ///< Current word in first language
     QString currAus;        ///< Current word in foreign language
     QString currComIn;      ///< Current comment for the word in first language
     QString currComAus;     ///< Current comment for the word in foreign language
@@ -42,7 +44,7 @@ private:
     void hideFrames(int number);
 
 public slots:
-    void getVocs(bool);     ///< Loads a record of voc from the database
+    void startExercise(bool);     ///< Loads a record of voc from the database
     void checkVoc(bool);    ///< Checks if the inserted translation match the word in 'currAus'
     void nextVoc(bool);     ///< Calls 'checkVoc()' and loads a new word
     void addVoc(bool);      ///< Shows the ui for adding a voc
