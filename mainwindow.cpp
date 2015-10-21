@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonStartInsert, SIGNAL(clicked(bool)), this, SLOT(addVoc(bool)));
     connect(ui->pushButtonStartLearn, SIGNAL(clicked(bool)), this, SLOT(showList(bool)));
     connect(ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(hideIrregular(int)));
+    connect(ui->pushButtonExportDB, SIGNAL(clicked(bool)), this, SLOT(exportDBtoJson(bool)));
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 }
 
@@ -193,4 +194,8 @@ void MainWindow::hideIrregular(int check)
 void MainWindow::resizeWindow()
 {
 
+}
+
+void MainWindow::exportDBtoJson(bool){
+    db.dbToJson();
 }

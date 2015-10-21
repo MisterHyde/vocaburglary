@@ -52,6 +52,7 @@ public slots:
     void showList(bool);    ///< Shows a list with all loaded voc
     void hideIrregular(int check);
     void resizeWindow();
+    void exportDBtoJson(bool);  ///< Just a caller function for dbToJson() from the class Managedb
 };
 
 #endif // MAINWINDOW_H

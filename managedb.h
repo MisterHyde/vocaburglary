@@ -5,9 +5,18 @@
 #include <QString>
 #include <QVariant>
 #include <QDebug>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
 #include <algorithm>
 #include <random>
 #include <chrono>
+#include <ui_selectPath.h>
+
+namespace Ui {
+class Managedb;
+}
 
 class Managedb
 {
@@ -18,6 +27,8 @@ class Managedb
     QList<QStringList> getVocs();
     bool updateRecRank(QString in, QString aus, bool right);
     bool updateRecAusland(QString aus, QString in);
+    int dbToJson();
+    int jsonToDb();
 
  private:
     QSqlDatabase db;

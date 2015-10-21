@@ -83,6 +83,9 @@ QList<QStringList> Managedb::getVocs()
         auscombuff.append(query.value(3).toString());
         rightbuff.append(query.value(4).toString());
     }
+    if(inbuff.isEmpty()){
+        //pop up message
+    }
 
     // If the two columns "inland" and "ausland" contains a different amount of items: return false
     listCount = inbuff.count();
@@ -126,4 +129,42 @@ bool Managedb::updateRecAusland(QString aus, QString in)
     query.exec();
 
     return query.isActive();
+}
+
+int Managedb::dbToJson()
+{
+    QJsonObject jobj;
+    QJsonArray jsonArr;
+    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM " + tableOneName + ";");
+
+    while(query.next()){
+        QJsonObject vocPair;
+        vocPair["inland"] = query.value(0).toString();
+        vocPair["ausland"] = query.value(1).toString();
+        vocPair["commentin"] = query.value(2).toString();
+        vocPair["commentaus"] = query.value(3).toString();
+        vocPair["rightt"] = query.value(4).toString();
+
+        jsonArr.append(vocPair);
+    }
+    jobj["Vocabeln"] = jsonArr;
+
+    QFile exportFile("vocabulary.json");
+
+    if(!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        qDebug() << "Couldn't open save file";
+        return -1;
+    }
+
+    QJsonDocument jdoc(jobj);
+    exportFile.write(jdoc.toJson());
+
+    return 1;
+}
+
+int Managedb::jsonToDb()
+{
+    QFile importFile("vocabulary.json");
+    //Ui::Dialog *dialog = new Ui::Dialog;
+    //dialog->setupUi(this);
 }
