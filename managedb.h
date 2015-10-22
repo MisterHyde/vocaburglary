@@ -9,16 +9,17 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QFile>
+#include <QFileDialog>
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include <ui_selectPath.h>
+#include <iterator>
 
 namespace Ui {
 class Managedb;
 }
 
-class Managedb
+class Managedb : public QWidget
 {
  public:
     Managedb();

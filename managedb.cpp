@@ -147,7 +147,7 @@ int Managedb::dbToJson()
 
         jsonArr.append(vocPair);
     }
-    jobj["Vocabeln"] = jsonArr;
+    jobj["Vokabeln"] = jsonArr;
 
     QFile exportFile("vocabulary.json");
 
@@ -164,7 +164,39 @@ int Managedb::dbToJson()
 
 int Managedb::jsonToDb()
 {
-    QFile importFile("vocabulary.json");
-    //Ui::Dialog *dialog = new Ui::Dialog;
-    //dialog->setupUi(this);
+    QString fileName = QFileDialog::getOpenFileName(this);
+    qDebug() << fileName;
+    QFile importFile(fileName);
+    if(!importFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        qDebug() << "Fehler beim öffnen der Datei " << fileName;
+        return -1;
+    }
+
+    QJsonObject jObj;
+    QJsonDocument jDoc;
+    QJsonArray jArr;
+    //QJsonArray::Iterator i;
+    QSqlQuery query;
+    //query.exec("START TRANSACTION;");
+
+    qDebug() << "Ja genau wir sind hier!";
+    QByteArray byteArray = importFile.readAll();
+    jDoc = QJsonDocument::fromJson(byteArray);
+    jObj = jDoc.object();
+    QJsonObject buff(jObj["Vokabeln"].toObject());
+    for(int i=0; i<jArr.size();i++){
+        query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt)\
+            VALUES(:inland, :ausland, :commentin, :commentaus, :right);");
+        query.bindValue(QString(":inland"), QVariant(buff["inland"].toString()));
+        query.bindValue(QString(":ausland"), QVariant(buff["ausland"].toString()));
+        query.bindValue(QString(":commentin"), QVariant(buff["commentin"].toString()));
+        query.bindValue(QString(":commentaus"), QVariant(buff["commentaus"].toString()));
+        query.bindValue(QString(":rightt"), QVariant(buff["rightt"].toString()));
+
+        query.exec();
+    }
+
+    //query.exec("COMMIT;");
+
+    return 1;
 }

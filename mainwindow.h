@@ -53,6 +53,7 @@ public slots:
     void hideIrregular(int check);
     void resizeWindow();
     void exportDBtoJson(bool);  ///< Just a caller function for dbToJson() from the class Managedb
+    void importDBfromJson(bool);
 };
 
 #endif // MAINWINDOW_H

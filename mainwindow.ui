@@ -342,11 +342,25 @@
      <string>Export to JSON</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>600</y>
+      <width>221</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Import from JSON</string>
+    </property>
+   </widget>
    <zorder>vocableTable</zorder>
    <zorder>startWidget</zorder>
    <zorder>learnWidget</zorder>
    <zorder>addWidget</zorder>
    <zorder>pushButtonExportDB</zorder>
+   <zorder>pushButton</zorder>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">

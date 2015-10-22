@@ -15,15 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     managedb.cpp \
-    customfunctions.cpp \
-    selectpath.cpp
+    customfunctions.cpp
 
 HEADERS  += mainwindow.h \
     managedb.h \
-    customfunctions.h \
-    selectpath.h
+    customfunctions.h
 
-FORMS    += mainwindow.ui \
-    selectPath.ui
+FORMS    += mainwindow.ui
 
 CONFIG  += c++11

@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonStartLearn, SIGNAL(clicked(bool)), this, SLOT(showList(bool)));
     connect(ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(hideIrregular(int)));
     connect(ui->pushButtonExportDB, SIGNAL(clicked(bool)), this, SLOT(exportDBtoJson(bool)));
+    connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(importDBfromJson(bool)));
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 }
 
@@ -196,6 +197,12 @@ void MainWindow::resizeWindow()
 
 }
 
-void MainWindow::exportDBtoJson(bool){
+void MainWindow::exportDBtoJson(bool)
+{
     db.dbToJson();
+}
+
+void MainWindow::importDBfromJson(bool)
+{
+    db.jsonToDb();
 }
