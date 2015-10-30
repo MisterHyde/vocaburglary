@@ -2,6 +2,7 @@
 #define MANAGEDB_H
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QString>
 #include <QVariant>
 #include <QDebug>
@@ -45,11 +46,11 @@ class Managedb : public QWidget
  *	  ausland varchar(40),
  *	  commentin varchar(40),
  *	  commentaus varchar(40),
- *	  rightt boolean,
- *	  wrong boolean,
+ *	  rightt integer,
+ *	  wrong integer,
  * 	  rank integer,
  *    CONSTRAINT pk_vocabulary Primary Key (ausland),
- *    CONSTRAINT u_oid Unique (oid);
+ *    CONSTRAINT u_oid Unique (oid),
  *    CONSTRAINT u_vocabulary Unique(ausland)
  * )WITH OIDS;
  *

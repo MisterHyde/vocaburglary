@@ -42,16 +42,18 @@ void MainWindow::showList(bool)
 
     QRect screenRect;
     hideFrames(2);
+    // Strange things I do here trying to make a dynamic window size...
     ui->vocableTable->setGeometry(gap, gap, ui->vocableTable->geometry().width(), ui->centralWidget->height() - ui->startWidget->height() - ui->statusBar->height() + gap);
     ui->vocableTable->setGeometry(gap, gap, ui->centralWidget->width() - 2*gap,ui->startWidget->y() - 2*gap);
     qDebug() << "height: " << ui->centralWidget->height();
     // Inserts in a QTableWidget as many items as the variable 'listCount' tells
     ui->vocableTable->setRowCount(listCount);
     for(int i=0; i<listCount; i++){
-        QTableWidgetItem *in = new QTableWidgetItem(vocRecords.at(0).at(i));
-        QTableWidgetItem *aus = new QTableWidgetItem(vocRecords.at(1).at(i));
+        QTableWidgetItem *in = new QTableWidgetItem(vocRecords.at(i).at(0));
+        QTableWidgetItem *aus = new QTableWidgetItem(vocRecords.at(i).at(1));
         ui->vocableTable->setItem(i, 0, aus);
         ui->vocableTable->setItem(i, 1, in);
+        qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
     }
 
     ui->vocableTable->setColumnWidth(0, 150);
@@ -89,18 +91,37 @@ void MainWindow::startExercise(bool)
 // Loads one word pair out of the vocRecords
 void MainWindow::nextVoc(bool)
 {
+    // If the last record done ask the user if he wants to start over again or leave
+    if(listIterator == listCount){
+        listIterator = 0;
+        QMessageBox box;
+        box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        box.setText(tr("Congratulations!\n You've completed the list. Want some new?"));
+        // If the "Ok" button was clicked mix the vocabulary new and start over again
+        if(box.exec() == 0x00000400){
+            chopVocRecords();
+        }
+        else{
+            hideFrames(-1);
+        }
+    }
+
+    // If there are new words inserted in this session reload the vocabular list
     if(newWords){
         updateVocRecords();
         listIterator = 0;
     }
 
     firstTry = true;
-    QString buff = vocRecords.at(0).at(listIterator);
+    // Save the current record in the attributes
+    QString buff = vocRecords.at(listIterator).at(0);
     buff = buff.remove(" ");
     currIn = buff.split(QRegExp("\\,"));
-    currAus = vocRecords.at(1).at(listIterator);
-    currComIn = vocRecords.at(2).at(listIterator);
-    currComAus = vocRecords.at(3).at(listIterator);
+    currAus = vocRecords.at(listIterator).at(1);
+    currComIn = vocRecords.at(listIterator).at(2);
+    currComAus = vocRecords.at(listIterator).at(3);
+    currCorrect = &vocRecords[listIterator][4];
+    // If the list is at the end set the iterator to the begin else to the next record
     listIterator += 1;
 
     ui->vocable->setText(currAus + currComAus);
@@ -110,7 +131,10 @@ void MainWindow::nextVoc(bool)
 // Compare if the user input is equal to the right translation, saved in "currIn"
 void MainWindow::checkVoc(bool)
 {
+    // Checks if the the user input is containted in the answer string
     if(currIn.contains(ui->translation->text())){
+        *currCorrect = QString("true");
+        // If size is bigger than one show which other meanings the word has
         if(currIn.size() > 1){
             QString buff = "";
             for(int i=0;i<currIn.size();++i){
@@ -137,9 +161,6 @@ void MainWindow::checkVoc(bool)
         //db.updateRec(currIn, currAus, false);
         firstTry = false;
     }
-
-    if(currIn.size() == 0)
-        qDebug() << "Update auslands Record: " << db.updateRecAusland(ui->translation->text(), currAus);
 }
 
 // Makes the "addWidget" visible and others invisible
@@ -155,7 +176,7 @@ void MainWindow::updateVocRecords()
     vocRecords = db.getVocs();
     if(vocRecords.isEmpty())
         qDebug() << "Hier ist ein Fehler passiert";
-    listCount = vocRecords.at(0).count();
+    listCount = vocRecords.count();
     newWords = false;
 }
 
@@ -205,4 +226,17 @@ void MainWindow::exportDBtoJson(bool)
 void MainWindow::importDBfromJson(bool)
 {
     db.jsonToDb();
+}
+
+// Creates a new vocRecords which contains just the wrong words
+void MainWindow::chopVocRecords()
+{
+    for(int i=0; i<listCount; i++){
+        if(vocRecords.at(i).at(5) == "true"){
+            vocRecords.removeAt(i);
+        }
+    }
+    if(vocRecords.size() == 0){
+        hideFrames(-1);
+    }
 }
