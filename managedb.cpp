@@ -46,52 +46,59 @@ bool Managedb::insertRec(QString in, QString aus, QString commentin, QString com
     QVariant qvAus(aus);
     QVariant qvComIn(commentin);
     QVariant qvComAus(commentaus);
+    bool success = false;
 
     QSqlQuery query;
-    query.prepare("INSERT INTO  " + tableOneName + "  (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
-                  "VALUES (:inland, :ausland, :commentin, :commentaus, 0, 0 ,0)");
-    query.bindValue(QString(":inland"), QVariant(qvIn));
-    query.bindValue(QString(":ausland"), QVariant(qvAus));
-    query.bindValue(QString(":commentin"), QVariant(qvComIn));
-    query.bindValue(QString(":commentaus"), QVariant(qvComAus));
+    query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
+                  "VALUES (:inland, :ausland, :commentin, :commentaus, 0, 0, 0);");
+    query.bindValue(QString(":inland"), qvIn);
+    query.bindValue(QString(":ausland"), qvAus);
+    query.bindValue(QString(":commentin"), qvComIn);
+    query.bindValue(QString(":commentaus"), qvComAus);
     query.exec();
 
-    qDebug() << "insertRec: " << in << aus << commentin << commentaus;
+    //success = query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
+    //              "VALUES (" + in + "," + aus + "," + commentin + "," + commentaus + ", 0, 0 ,0)");
 
-    return query.isActive();
+    if(!success){
+        QSqlError err = query.lastError();
+        qDebug() << err.text();
+        qDebug() << query.lastQuery();
+    }
+
+
+    return success;
 }
 
 // Loads all records from the database and the list records which contains all words shuffled and in the follow data structure
 // records{ inland(QStringList), ausland(QStringList), commentIn(QStringList), commentAus(QStringList) }
 QList<QStringList> Managedb::getVocs()
 {
-    QStringList inbuff;
-    QStringList ausbuff;
-    QStringList incombuff;
-    QStringList auscombuff;
-    QStringList rightbuff;
     QList<QStringList> records;
+    QStringList record;
+    QList<QStringList> recordsbuff;
     QList<int> intList;
     int listCount;
 
     QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM " + tableOneName + ";");
 
     while(query.next()) {
-        inbuff.append(query.value(0).toString());
-        ausbuff.append(query.value(1).toString());
-        incombuff.append(query.value(2).toString());
-        auscombuff.append(query.value(3).toString());
-        rightbuff.append(query.value(4).toString());
+        record.append(query.value(0).toString());
+        record.append(query.value(1).toString());
+        record.append(query.value(2).toString());
+        record.append(query.value(3).toString());
+        record.append(query.value(4).toString());
+        record.append("false");
+        recordsbuff.append(record);
+        record.clear();
     }
-    if(inbuff.isEmpty()){
+
+    if(recordsbuff.isEmpty()){
         //pop up message
+        qDebug() << "UUUps aus der Datenbank kam nichts...";
     }
 
-    // If the two columns "inland" and "ausland" contains a different amount of items: return false
-    listCount = inbuff.count();
-    if(listCount != ausbuff.count())
-        return records;
-
+    listCount = recordsbuff.size();
     // The range of the list goes from 0 to listCount-1
     for(int i=0; i<listCount; i++){
         intList.append(i);
@@ -100,23 +107,10 @@ QList<QStringList> Managedb::getVocs()
     // Shuffle the in the above step created intList.
     std::random_shuffle(intList.begin(),intList.end());
 
-    QStringList inland;
-    QStringList ausland;
-    QStringList commentin;
-    QStringList commentaus;
-    QStringList right;
-
     // Use the shuffled intList to get shuffled word lists
     for(int i=0; i<listCount; i++){
-        inland.insert(i, inbuff.at(intList.at(i)));
-        ausland.insert(i, ausbuff.at(intList.at(i)));
-        commentin.insert(i, incombuff.at(intList.at(i)));
-        commentaus.insert(i, auscombuff.at(intList.at(i)));
-        right.insert(i, rightbuff.at(intList.at(i)));
+        records.append(recordsbuff.at(i));
     }
-
-    // Save all columns in one list
-    records << inland << ausland << commentin << commentaus << right;
 
     return records;
 }
