@@ -9,6 +9,8 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QMessageBox>
+#include <QResizeEvent>
+#include <iostream>
 #include "managedb.h"
 #include "customfunctions.h"
 
@@ -25,6 +27,8 @@ public:
     ~MainWindow();
 
 private:
+    enum boxes {nothing = -1, addBox, learnBox, listBox, buttonBox, irregularBox};
+
     Ui::MainWindow *ui;
     Managedb db;
     QList<QStringList> vocRecords;  ///< List with all
@@ -42,8 +46,9 @@ private:
     const int gap = 10;
 
     void updateVocRecords();
-    void hideFrames(int number);
+    void hideFrames(boxes number);
     void chopVocRecords();
+    void resizeEvent(QResizeEvent *event);
 
 public slots:
     void startExercise(bool);     ///< Loads a record of voc from the database

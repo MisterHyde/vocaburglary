@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    hideFrames(-1);
+    hideFrames(nothing);
     ui->centralWidget->setGeometry(0, 0, ui->startWidget->width() + 20, ui->startWidget->height() + 20);
 
     screen = QApplication::desktop()->availableGeometry();
@@ -41,11 +41,11 @@ void MainWindow::showList(bool)
     //this->adjustSize();
 
     QRect screenRect;
-    hideFrames(2);
+    hideFrames(listBox);
     // Strange things I do here trying to make a dynamic window size...
     ui->vocableTable->setGeometry(gap, gap, ui->vocableTable->geometry().width(), ui->centralWidget->height() - ui->startWidget->height() - ui->statusBar->height() + gap);
     ui->vocableTable->setGeometry(gap, gap, ui->centralWidget->width() - 2*gap,ui->startWidget->y() - 2*gap);
-    qDebug() << "height: " << ui->centralWidget->height();
+    //qDebug() << "height: " << ui->centralWidget->height();
     // Inserts in a QTableWidget as many items as the variable 'listCount' tells
     ui->vocableTable->setRowCount(listCount);
     for(int i=0; i<listCount; i++){
@@ -53,7 +53,7 @@ void MainWindow::showList(bool)
         QTableWidgetItem *aus = new QTableWidgetItem(vocRecords.at(i).at(1));
         ui->vocableTable->setItem(i, 0, aus);
         ui->vocableTable->setItem(i, 1, in);
-        qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
+        //qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
     }
 
     ui->vocableTable->setColumnWidth(0, 150);
@@ -83,7 +83,7 @@ void MainWindow::insert(bool)
 // Shows the exercise frame and loads the first word pair
 void MainWindow::startExercise(bool)
 {
-    hideFrames(1);
+    hideFrames(learnBox);
 
     this->nextVoc(true);
 }
@@ -102,7 +102,7 @@ void MainWindow::nextVoc(bool)
             chopVocRecords();
         }
         else{
-            hideFrames(-1);
+            hideFrames(nothing);
         }
     }
 
@@ -157,7 +157,7 @@ void MainWindow::checkVoc(bool)
     else{
         if(!currComIn.isEmpty())
             currComIn = ", " + currComIn;
-        ui->successLabel->setText("Falsch: " + CF::undoStringList(currIn) + currComIn);
+        ui->successLabel->setText("Falsch: " + CustomFuctions::undoStringList(currIn) + currComIn);
         //db.updateRec(currIn, currAus, false);
         firstTry = false;
     }
@@ -166,7 +166,7 @@ void MainWindow::checkVoc(bool)
 // Makes the "addWidget" visible and others invisible
 void MainWindow::addVoc(bool)
 {
-   hideFrames(0);
+   hideFrames(addBox);
    hideIrregular(0);
 }
 
@@ -181,19 +181,19 @@ void MainWindow::updateVocRecords()
 }
 
 // Hides frames
-void MainWindow::hideFrames(int number)
+void MainWindow::hideFrames(boxes number)
 {
      ui->addWidget->setVisible(false);
      ui->learnWidget->setVisible(false);
      ui->vocableTable->setVisible(false);
 
-     if(number == 0)
+     if(number == addBox)
          ui->addWidget->setVisible(true);
 
-     if(number == 1)
+     if(number == learnBox)
          ui->learnWidget->setVisible(true);
 
-     if(number == 2)
+     if(number == listBox)
          ui->vocableTable->setVisible(true);
 }
 
@@ -237,6 +237,18 @@ void MainWindow::chopVocRecords()
         }
     }
     if(vocRecords.size() == 0){
-        hideFrames(-1);
+        hideFrames(nothing);
     }
 }
+
+void MainWindow::resizeEvent(QResizeEvent *event){
+//    ui->centralWidget->setGeometry(this->x(),this->y(),event->size().width(),event->size().height);
+    //ui->mainLayout->setGeometry(0, 0, event->size().width(), event->size().height());
+    ui->mainLayout->setGeometry(QRect(0, 0, event->size().width(), event->size().height()));
+    qDebug() << "<name>:" << "x" << "y" << "width" << "height";
+    qDebug() << "Main Window:" << "0" << "0" << event->size().width() << event->size().height();
+    qDebug() << "vocableTable" << ui->vocableTable->x() << ui->vocableTable->y() << ui->vocableTable->width() << ui->vocableTable->height();
+    qDebug() << "startWidget:" << ui->startWidget->x() << ui->startWidget->y() << ui->startWidget->width() << ui->startWidget->height();
+}
+
+//

@@ -55,13 +55,14 @@ bool Managedb::insertRec(QString in, QString aus, QString commentin, QString com
     query.bindValue(QString(":ausland"), qvAus);
     query.bindValue(QString(":commentin"), qvComIn);
     query.bindValue(QString(":commentaus"), qvComAus);
-    query.exec();
+    success = query.exec();
 
     //success = query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
     //              "VALUES (" + in + "," + aus + "," + commentin + "," + commentaus + ", 0, 0 ,0)");
 
     if(!success){
         QSqlError err = query.lastError();
+        qDebug() << "ERROR! No success with inserting a new record";
         qDebug() << err.text();
         qDebug() << query.lastQuery();
     }
@@ -118,7 +119,7 @@ QList<QStringList> Managedb::getVocs()
 bool Managedb::updateRecAusland(QString aus, QString in)
 {
     QString bubl = "UPDATE " + tableOneName + " SET ausland='" + aus + "' where inland='" + in + "';";
-    qDebug() << "updateRecAusland: " << bubl;
+    //qDebug() << "updateRecAusland: " << bubl;
     QSqlQuery query(bubl);
     query.exec();
 
@@ -169,11 +170,9 @@ int Managedb::jsonToDb()
     QJsonObject jObj;
     QJsonDocument jDoc;
     QJsonArray jArr;
-    //QJsonArray::Iterator i;
     QSqlQuery query;
-    //query.exec("START TRANSACTION;");
+    bool success;
 
-    qDebug() << "Ja genau wir sind hier!";
     QByteArray byteArray = importFile.readAll();
     jDoc = QJsonDocument::fromJson(byteArray);
     jObj = jDoc.object();
@@ -187,10 +186,10 @@ int Managedb::jsonToDb()
         query.bindValue(QString(":commentaus"), QVariant(buff["commentaus"].toString()));
         query.bindValue(QString(":rightt"), QVariant(buff["rightt"].toString()));
 
-        query.exec();
+        success = query.exec();
     }
 
     //query.exec("COMMIT;");
 
-    return 1;
+    return success;
 }
