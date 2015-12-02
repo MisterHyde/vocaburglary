@@ -26,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonExportDB, SIGNAL(clicked(bool)), this, SLOT(exportDBtoJson(bool)));
     connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(importDBfromJson(bool)));
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
+
+    //CustomFuctions::parseXml("DCE_most_frequent_words_07_08_basic_list_v2.xml");
 }
 
 void MainWindow::showList(bool)
@@ -114,8 +116,8 @@ void MainWindow::nextVoc(bool)
 
     firstTry = true;
     // Save the current record in the attributes
-    QString buff = vocRecords.at(listIterator).at(0);
-    buff = buff.remove(" ");
+    currInOrigin = vocRecords.at(listIterator).at(0);
+    QString buff = currInOrigin.trimmed();
     currIn = buff.split(QRegExp("\\,"));
     currAus = vocRecords.at(listIterator).at(1);
     currComIn = vocRecords.at(listIterator).at(2);
@@ -150,7 +152,7 @@ void MainWindow::checkVoc(bool)
             ui->successLabel->setText("YEAH!");
         }
         if(firstTry){
-            //db.updateRec(currIn, currAus, true);
+            db.updateRank(currInOrigin, currAus, true);
         }
         nextVoc(false);
     }
@@ -158,7 +160,7 @@ void MainWindow::checkVoc(bool)
         if(!currComIn.isEmpty())
             currComIn = ", " + currComIn;
         ui->successLabel->setText("Falsch: " + CustomFuctions::undoStringList(currIn) + currComIn);
-        //db.updateRec(currIn, currAus, false);
+        db.updateRank(currInOrigin, currAus, false);
         firstTry = false;
     }
 }
@@ -181,7 +183,7 @@ void MainWindow::updateVocRecords()
 }
 
 // Hides frames
-void MainWindow::hideFrames(boxes number)
+void MainWindow::hideFrames(Boxes number)
 {
      ui->addWidget->setVisible(false);
      ui->learnWidget->setVisible(false);
@@ -241,14 +243,14 @@ void MainWindow::chopVocRecords()
     }
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event){
-//    ui->centralWidget->setGeometry(this->x(),this->y(),event->size().width(),event->size().height);
-    //ui->mainLayout->setGeometry(0, 0, event->size().width(), event->size().height());
-    ui->mainLayout->setGeometry(QRect(0, 0, event->size().width(), event->size().height()));
-    qDebug() << "<name>:" << "x" << "y" << "width" << "height";
-    qDebug() << "Main Window:" << "0" << "0" << event->size().width() << event->size().height();
-    qDebug() << "vocableTable" << ui->vocableTable->x() << ui->vocableTable->y() << ui->vocableTable->width() << ui->vocableTable->height();
-    qDebug() << "startWidget:" << ui->startWidget->x() << ui->startWidget->y() << ui->startWidget->width() << ui->startWidget->height();
-}
+//void MainWindow::resizeEvent(QResizeEvent *event){
+////    ui->centralWidget->setGeometry(this->x(),this->y(),event->size().width(),event->size().height);
+//    //ui->mainLayout->setGeometry(0, 0, event->size().width(), event->size().height());
+//    ui->mainLayout->setGeometry(QRect(0, 0, event->size().width(), event->size().height()));
+//    qDebug() << "<name>:" << "x" << "y" << "width" << "height";
+//    qDebug() << "Main Window:" << "0" << "0" << event->size().width() << event->size().height();
+//    qDebug() << "vocableTable" << ui->vocableTable->x() << ui->vocableTable->y() << ui->vocableTable->width() << ui->vocableTable->height();
+//    qDebug() << "startWidget:" << ui->startWidget->x() << ui->startWidget->y() << ui->startWidget->width() << ui->startWidget->height();
+//}
 
 //

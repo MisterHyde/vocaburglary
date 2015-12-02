@@ -17,7 +17,7 @@ Managedb::Managedb()
 
 // The first two parameters specifing the primary key
 // The third specify if the the attribute rightt or wrong should be incremented
-bool Managedb::updateRecRank(QString in, QString aus, bool right)
+bool Managedb::updateRank(QString in, QString aus, bool right)
 {
     QString queryString;
     QVariant qvIn(in);

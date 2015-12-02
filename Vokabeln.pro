@@ -21,6 +21,8 @@ HEADERS  += mainwindow.h \
     managedb.h \
     customfunctions.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    exercise.ui \
+    newword.ui
 
 CONFIG  += c++11

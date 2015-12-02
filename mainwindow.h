@@ -27,12 +27,13 @@ public:
     ~MainWindow();
 
 private:
-    enum boxes {nothing = -1, addBox, learnBox, listBox, buttonBox, irregularBox};
+    enum Boxes {nothing = -1, addBox, learnBox, listBox, buttonBox, irregularBox};
 
     Ui::MainWindow *ui;
     Managedb db;
     QList<QStringList> vocRecords;  ///< List with all
-    QStringList currIn;         ///< Current word in first language
+    QStringList currIn;         ///< Current list of translations
+    QString currInOrigin;   ///< Holds the string which is stored in the database
     QString currAus;        ///< Current word in foreign language
     QString currComIn;      ///< Current comment for the word in first language
     QString currComAus;     ///< Current comment for the word in foreign language
@@ -46,9 +47,9 @@ private:
     const int gap = 10;
 
     void updateVocRecords();
-    void hideFrames(boxes number);
+    void hideFrames(Boxes number);
     void chopVocRecords();
-    void resizeEvent(QResizeEvent *event);
+    //void resizeEvent(QResizeEvent *event);
 
 public slots:
     void startExercise(bool);     ///< Loads a record of voc from the database
