@@ -23,8 +23,8 @@ class Managedb;
 class Managedb : public QWidget
 {
  public:
+    // Functions to work with a SQL database
     Managedb();
-
     bool insertRec(QString in, QString aus, QString commentin, QString commentaus);
     QList<QStringList> getVocs();
     bool updateRank(QString in, QString aus, bool right);

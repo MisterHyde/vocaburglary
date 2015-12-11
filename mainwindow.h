@@ -11,8 +11,12 @@
 #include <QMessageBox>
 #include <QResizeEvent>
 #include <iostream>
-#include "managedb.h"
 #include "customfunctions.h"
+#ifdef ANDROIDD
+#include "managedbmanagedjsondb.h"
+#else
+#include "managedb.h"
+#endif
 
 namespace Ui {
 class MainWindow;
@@ -30,8 +34,14 @@ private:
     enum Boxes {nothing = -1, addBox, learnBox, listBox, buttonBox, irregularBox};
 
     Ui::MainWindow *ui;
+
+#ifdef ANDROIDD
+    ManagedJsonDb db;
+#else
     Managedb db;
+#endif
     QList<QStringList> vocRecords;  ///< List with all
+    // Instead of using for the current word varables for all information use a pointer to the place in the data structure
     QStringList currIn;         ///< Current list of translations
     QString currInOrigin;   ///< Holds the string which is stored in the database
     QString currAus;        ///< Current word in foreign language
@@ -43,6 +53,7 @@ private:
     bool newWords;      //!< True if a new voc pair was insert this variable is set to true so the learning list can be updateted at runtime
     bool firstTry;      //!< True when it was the first try on a voc
     QRect screen;       ///< Holds the size of the screen
+    bool usingAndroid;
 
     const int gap = 10;
 
@@ -51,7 +62,7 @@ private:
     void chopVocRecords();
     //void resizeEvent(QResizeEvent *event);
 
-public slots:
+private slots:
     void startExercise(bool);     ///< Loads a record of voc from the database
     void checkVoc(bool);    ///< Checks if the inserted translation match the word in 'currAus'
     void nextVoc(bool);     ///< Calls 'checkVoc()' and loads a new word
@@ -62,6 +73,7 @@ public slots:
     void resizeWindow();
     void exportDBtoJson(bool);  ///< Just a caller function for dbToJson() from the class Managedb
     void importDBfromJson(bool);
+    void showStartWidget();
 };
 
 #endif // MAINWINDOW_H

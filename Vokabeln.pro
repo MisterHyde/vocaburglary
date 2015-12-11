@@ -15,14 +15,18 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     managedb.cpp \
-    customfunctions.cpp
+    customfunctions.cpp \
+    managedjsondb.cpp
 
 HEADERS  += mainwindow.h \
     managedb.h \
-    customfunctions.h
+    customfunctions.h \
+    managedjsondb.h
 
 FORMS    += mainwindow.ui \
     exercise.ui \
     newword.ui
 
-CONFIG  += c++11
+CONFIG  += mobility
+CONFIG += C++11
+MOBILITY = 

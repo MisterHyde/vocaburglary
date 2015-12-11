@@ -5,7 +5,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     currIn(""), currAus(""), currComIn(""), currComAus(""),
-    listIterator(0), newWords(false), firstTry(true)
+    listIterator(0), newWords(false), firstTry(true), usingAndroid(true)
 {
     ui->setupUi(this);
 
@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(hideIrregular(int)));
     connect(ui->pushButtonExportDB, SIGNAL(clicked(bool)), this, SLOT(exportDBtoJson(bool)));
     connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(importDBfromJson(bool)));
+    connect(ui->pushButtonBack, SIGNAL(clicked()), this, SLOT(showStartWidget()));
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 
     //CustomFuctions::parseXml("DCE_most_frequent_words_07_08_basic_list_v2.xml");
@@ -94,7 +95,7 @@ void MainWindow::startExercise(bool)
 void MainWindow::nextVoc(bool)
 {
     // If the last record done ask the user if he wants to start over again or leave
-    if(listIterator == listCount){
+    if(listIterator == listCount-1){
         listIterator = 0;
         QMessageBox box;
         box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -128,6 +129,8 @@ void MainWindow::nextVoc(bool)
 
     ui->vocable->setText(currAus + currComAus);
     ui->translation->setText("");
+    ui->labelRightCount->setText("Right counter: " + vocRecords.at(listIterator).at(4));
+    ui->labelWrongCount->setText("Wrong counter " + vocRecords.at(listIterator).at(5));
 }
 
 // Compare if the user input is equal to the right translation, saved in "currIn"
@@ -188,15 +191,25 @@ void MainWindow::hideFrames(Boxes number)
      ui->addWidget->setVisible(false);
      ui->learnWidget->setVisible(false);
      ui->vocableTable->setVisible(false);
+     ui->pushButtonBack->setVisible(false);
+     ui->startWidget->setVisible(false);
 
-     if(number == addBox)
+     switch(number){
+        case addBox:
          ui->addWidget->setVisible(true);
-
-     if(number == learnBox)
+         ui->pushButtonBack->setVisible(true);
+         break;
+        case learnBox:
          ui->learnWidget->setVisible(true);
-
-     if(number == listBox)
+         ui->pushButtonBack->setVisible(true);
+         break;
+        case listBox:
          ui->vocableTable->setVisible(true);
+         ui->pushButtonBack->setVisible(true);
+         break;
+        default:
+         ui->startWidget->setVisible(true);
+     }
 }
 
 // Hides irregual input
@@ -253,4 +266,7 @@ void MainWindow::chopVocRecords()
 //    qDebug() << "startWidget:" << ui->startWidget->x() << ui->startWidget->y() << ui->startWidget->width() << ui->startWidget->height();
 //}
 
-//
+void MainWindow::showStartWidget()
+{
+    hideFrames(nothing);
+}

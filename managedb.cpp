@@ -81,7 +81,7 @@ QList<QStringList> Managedb::getVocs()
     QList<int> intList;
     int listCount;
 
-    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM " + tableOneName + ";");
+    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";");
 
     while(query.next()) {
         record.append(query.value(0).toString());
@@ -89,6 +89,7 @@ QList<QStringList> Managedb::getVocs()
         record.append(query.value(2).toString());
         record.append(query.value(3).toString());
         record.append(query.value(4).toString());
+        record.append(query.value(5).toString());
         record.append("false");
         recordsbuff.append(record);
         record.clear();
@@ -108,14 +109,20 @@ QList<QStringList> Managedb::getVocs()
     // Shuffle the in the above step created intList.
     std::random_shuffle(intList.begin(),intList.end());
 
+    // Initialize an i long records list with empty elements
+    for(int i : intList){
+        records.append(QStringList());
+    }
+
     // Use the shuffled intList to get shuffled word lists
     for(int i=0; i<listCount; i++){
-        records.append(recordsbuff.at(i));
+        records[intList.at(i)] = recordsbuff.at(i);
     }
 
     return records;
 }
 
+// Updates the records hold in memory with changed from the database
 bool Managedb::updateRecAusland(QString aus, QString in)
 {
     QString bubl = "UPDATE " + tableOneName + " SET ausland='" + aus + "' where inland='" + in + "';";
@@ -130,7 +137,7 @@ int Managedb::dbToJson()
 {
     QJsonObject jobj;
     QJsonArray jsonArr;
-    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt FROM " + tableOneName + ";");
+    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";");
 
     while(query.next()){
         QJsonObject vocPair;
@@ -139,6 +146,7 @@ int Managedb::dbToJson()
         vocPair["commentin"] = query.value(2).toString();
         vocPair["commentaus"] = query.value(3).toString();
         vocPair["rightt"] = query.value(4).toString();
+        vocPair["wrong"] = query.value(5).toString();
 
         jsonArr.append(vocPair);
     }
@@ -157,39 +165,46 @@ int Managedb::dbToJson()
     return 1;
 }
 
+// Save the entries of the json backup file into the sql database
 int Managedb::jsonToDb()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
-    qDebug() << fileName;
     QFile importFile(fileName);
     if(!importFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        qDebug() << "Fehler beim öffnen der Datei " << fileName;
-        return -1;
+        qDebug() << "Fehler beim öffnen der Datei" << fileName;
+        return false;
     }
 
     QJsonObject jObj;
     QJsonDocument jDoc;
-    QJsonArray jArr;
+    QJsonArray jArr, jArr2;
     QSqlQuery query;
-    bool success;
+    QList<bool> success;
 
+    // Read everything out of the file
     QByteArray byteArray = importFile.readAll();
+    // Convert the text we'd read to a QJsonDocument
     jDoc = QJsonDocument::fromJson(byteArray);
+    jArr2 = jDoc.array();
+    // Convert the QJsonDocument to a QJsonObject
     jObj = jDoc.object();
-    QJsonObject buff(jObj["Vokabeln"].toObject());
-    for(int i=0; i<jArr.size();i++){
-        query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt)\
-            VALUES(:inland, :ausland, :commentin, :commentaus, :right);");
-        query.bindValue(QString(":inland"), QVariant(buff["inland"].toString()));
-        query.bindValue(QString(":ausland"), QVariant(buff["ausland"].toString()));
-        query.bindValue(QString(":commentin"), QVariant(buff["commentin"].toString()));
-        query.bindValue(QString(":commentaus"), QVariant(buff["commentaus"].toString()));
-        query.bindValue(QString(":rightt"), QVariant(buff["rightt"].toString()));
+    // Convert everything which is containt under the node "Vokabeln" into a QJsonArray
+    jArr = jObj["Vokabeln"].toArray();
+    // Convert that QJsonArray in a QVariantList which we can finally use to work with
+    QVariantList vList = jArr.toVariantList();
+    // Use c++11 "foreach" loop each entry in vList is mapped to v
+    for(QVariant v: vList){
+        query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong) VALUES(:inland, :ausland, :commentin, :commentaus, :rightt, :wrong);");
+        // Ok now finally we convert every entry v to a QMap and can work with them now...
+        QMap<QString,QVariant> map = v.toMap();
+        query.bindValue(QString(":inland"), map.value("inland"));
+        query.bindValue(QString(":ausland"), map.value("ausland"));
+        query.bindValue(QString(":commentin"), map.value("commentin"));
+        query.bindValue(QString(":commentaus"), map.value("commentaus"));
+        query.bindValue(QString(":rightt"), map.value("rightt"));
+        query.bindValue(QString(":wrong"), map.value("wrong"));
 
-        success = query.exec();
+        success.append(query.exec());
     }
-
-    //query.exec("COMMIT;");
-
-    return success;
+    return success.count(true);
 }
