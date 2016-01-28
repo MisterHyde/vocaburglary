@@ -1,4 +1,6 @@
-#include "managedb.h"
+
+
+ #include "managedb.h"
 
 /**
  * @brief Managedb::Managedb
@@ -111,13 +113,13 @@ QList<QStringList> Managedb::getVocs()
 
     // Initialize an i long records list with empty elements
     for(int i : intList){
-        records.append(QStringList());
+        records.append(recordsbuff.at(intList.at(i)));
     }
 
     // Use the shuffled intList to get shuffled word lists
-    for(int i=0; i<listCount; i++){
-        records[intList.at(i)] = recordsbuff.at(i);
-    }
+//    for(int i=0; i<listCount; i++){
+//        records[intList.at(i)] = recordsbuff.at(i);
+//    }
 
     return records;
 }
