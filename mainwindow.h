@@ -54,6 +54,7 @@ private:
     bool firstTry;      //!< True when it was the first try on a voc
     QRect screen;       ///< Holds the size of the screen
     bool usingAndroid;
+    QSize startSpacer;
 
     const int gap = 10;
 

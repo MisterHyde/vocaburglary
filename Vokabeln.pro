@@ -24,8 +24,6 @@ HEADERS  += mainwindow.h \
     managedjsondb.h
 
 FORMS    += mainwindow.ui \
-    exercise.ui \
-    newword.ui
 
 CONFIG  += mobility
 CONFIG += C++11
