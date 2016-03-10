@@ -12,7 +12,7 @@ bool ManagedJsonDb::insertRec(QString in, QString aus, QString commentin, QStrin
 
 }
 
-QList<QStringList> ManagedJsonDb::getVocs(QString pPath)
+QList<QStringList> ManagedJsonDb::getVocs()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
     QFile importFile(fileName);

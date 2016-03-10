@@ -62,6 +62,6 @@ class Managedb : public QWidget
  *  	we varchar(40),
  *  	you2 varchar(40),
  *  	they varchar(40),
- *  	CONSTRAINT fk_vocabulary Foreign Key oid  REFERENCES vocabulary(oid)
+ *  	CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)
  * )WITH OIDS;
  */

@@ -95,13 +95,13 @@ void MainWindow::startExercise(bool)
 void MainWindow::nextVoc(bool)
 {
     // If the last record done ask the user if he wants to start over again or leave
-    if(listIterator == listCount-1){
+    if(listIterator == vocRecords.size()-1){
         listIterator = 0;
         QMessageBox box;
         box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         box.setText(tr("Congratulations!\n You've completed the list. Want some new?"));
         // If the "Ok" button was clicked mix the vocabulary new and start over again
-        if(box.exec() == 0x00000400){
+        if(box.exec() == QMessageBox::Ok){
             chopVocRecords();
         }
         else{
@@ -125,12 +125,13 @@ void MainWindow::nextVoc(bool)
     currComAus = vocRecords.at(listIterator).at(3);
     currCorrect = &vocRecords[listIterator][4];
     // If the list is at the end set the iterator to the begin else to the next record
-    listIterator += 1;
-
-    ui->vocable->setText(currAus + currComAus);
-    ui->translation->setText("");
-    ui->labelRightCount->setText("Right counter: " + vocRecords.at(listIterator).at(4));
-    ui->labelWrongCount->setText("Wrong counter " + vocRecords.at(listIterator).at(5));
+    if(listIterator < vocRecords.size()-1){
+        listIterator += 1;
+        ui->vocable->setText(currAus + currComAus);
+        ui->translation->setText("");
+        ui->labelRightCount->setText("Right counter: " + vocRecords.at(listIterator).at(4));
+        ui->labelWrongCount->setText("Wrong counter " + vocRecords.at(listIterator).at(5));
+    }
 }
 
 // Compare if the user input is equal to the right translation, saved in "currIn"
@@ -246,7 +247,7 @@ void MainWindow::importDBfromJson(bool)
 // Creates a new vocRecords which contains just the wrong words
 void MainWindow::chopVocRecords()
 {
-    for(int i=0; i<listCount; i++){
+    for(int i=0; i<vocRecords.size(); i++){
         if(vocRecords.at(i).at(5) == "true"){
             vocRecords.removeAt(i);
         }
