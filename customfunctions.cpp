@@ -1,6 +1,21 @@
 #include "customfunctions.h"
 
-QString CustomFuctions::undoStringList(QStringList list){
+QSize CustomFunctions::myGetQTableWidgetSize(QTableWidget *tw){
+    //QHeaderView *vh = tw->verticalHeader();
+    //QHeaderView *hh = tw->horizontalHeader();
+
+    int w = tw->verticalHeader()->width() + 4;
+    for(int i=0; i<tw->columnCount(); i++)
+        w +=tw->columnWidth(i);
+
+    int h = tw->horizontalHeader()->height() + 4;
+    for(int i=0; i<tw->rowCount(); i++)
+        h += tw->rowHeight(i);
+
+    return QSize(w,h);
+}
+
+QString CustomFunctions::undoStringList(QStringList list){
     QString buff = "";
     if(list.size()>1){
         qint8 size = list.size();
@@ -21,7 +36,7 @@ QString CustomFuctions::undoStringList(QStringList list){
 }
 
 
-QString CustomFuctions::csvToJson(QString pCsvPath)
+QString CustomFunctions::csvToJson(QString pCsvPath)
 {
 /*    QFile csvFile(pCsvPath);
     QFile jsonFile("tmp_vocabulary.json");
@@ -50,7 +65,7 @@ QString CustomFuctions::csvToJson(QString pCsvPath)
 
 }
 
-void CustomFuctions::parseXml(QString path)
+void CustomFunctions::parseXml(QString path)
 {
     QFile source(path);
     if(!source.open(QIODevice::ReadOnly)){

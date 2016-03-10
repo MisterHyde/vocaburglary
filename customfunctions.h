@@ -10,11 +10,14 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QTableWidget>
+#include <QHeaderView>
 
-namespace CustomFuctions{
-QString undoStringList(QStringList);
-QString csvToJson(QString pCsvPath);
-void parseXml(QString path);
+namespace CustomFunctions{
+    QString undoStringList(QStringList);
+    QString csvToJson(QString pCsvPath);
+    void parseXml(QString path);
+    QSize myGetQTableWidgetSize(QTableWidget *tw);
 }
 
 #endif // CUSTOMFUNCTIONS_H

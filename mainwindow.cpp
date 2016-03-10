@@ -9,8 +9,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    startSpacer = ui->verticalSpacer->sizeHint();
+
     hideFrames(nothing);
+    
+#ifndef ANDROID
     ui->centralWidget->setGeometry(0, 0, ui->startWidget->width() + 20, ui->startWidget->height() + 20);
+#endif
 
     screen = QApplication::desktop()->availableGeometry();
 
@@ -43,11 +48,11 @@ void MainWindow::showList(bool)
     //this->setCentralWidget(ui->vocableTable);
     //this->adjustSize();
 
-    QRect screenRect;
+    //QRect screenRect;
     hideFrames(listBox);
     // Strange things I do here trying to make a dynamic window size...
-    ui->vocableTable->setGeometry(gap, gap, ui->vocableTable->geometry().width(), ui->centralWidget->height() - ui->startWidget->height() - ui->statusBar->height() + gap);
-    ui->vocableTable->setGeometry(gap, gap, ui->centralWidget->width() - 2*gap,ui->startWidget->y() - 2*gap);
+    //ui->vocableTable->setGeometry(gap, gap, ui->vocableTable->geometry().width(), ui->centralWidget->height() - ui->startWidget->height() - ui->statusBar->height() + gap);
+    //ui->vocableTable->setGeometry(gap, gap, ui->centralWidget->width() - 2*gap,ui->startWidget->y() - 2*gap);
     //qDebug() << "height: " << ui->centralWidget->height();
     // Inserts in a QTableWidget as many items as the variable 'listCount' tells
     ui->vocableTable->setRowCount(listCount);
@@ -59,8 +64,17 @@ void MainWindow::showList(bool)
         //qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
     }
 
-    ui->vocableTable->setColumnWidth(0, 150);
-    ui->vocableTable->setColumnWidth(1, 150);
+    // arrange the size of the columns
+    //ui->vocableTable->setColumnWidth(0, 150);
+    //ui->vocableTable->setColumnWidth(1, 150);
+    QHeaderView* header = ui->vocableTable->horizontalHeader();
+    header->setStretchLastSection(true);
+
+    QTableWidget *tw = ui->vocableTable;
+    ui->vocableTable->setMaximumSize(CustomFunctions::myGetQTableWidgetSize(tw));
+    //ui->vocableTable->set
+    //QRect g = ui->verticalSpacer->geometry();
+    //ui->verticalSpacer->setGeometry(QRect(ui->verticalSpacer->x(), ui->verticalSpacer->y()));
 }
 
 MainWindow::~MainWindow()
@@ -163,7 +177,7 @@ void MainWindow::checkVoc(bool)
     else{
         if(!currComIn.isEmpty())
             currComIn = ", " + currComIn;
-        ui->successLabel->setText("Falsch: " + CustomFuctions::undoStringList(currIn) + currComIn);
+        ui->successLabel->setText("Falsch: " + CustomFunctions::undoStringList(currIn) + currComIn);
         db.updateRank(currInOrigin, currAus, false);
         firstTry = false;
     }
@@ -199,18 +213,23 @@ void MainWindow::hideFrames(Boxes number)
         case addBox:
          ui->addWidget->setVisible(true);
          ui->pushButtonBack->setVisible(true);
+         ui->verticalSpacer->changeSize(-1, -1, QSizePolicy::Expanding);
          break;
         case learnBox:
          ui->learnWidget->setVisible(true);
          ui->pushButtonBack->setVisible(true);
+         ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Expanding);
          break;
         case listBox:
          ui->vocableTable->setVisible(true);
          ui->pushButtonBack->setVisible(true);
+         ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Minimum);
          break;
         default:
+         ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Expanding);
          ui->startWidget->setVisible(true);
      }
+     startSpacer = ui->verticalSpacer->sizeHint();
 }
 
 // Hides irregual input
@@ -242,6 +261,7 @@ void MainWindow::exportDBtoJson(bool)
 void MainWindow::importDBfromJson(bool)
 {
     db.jsonToDb();
+    this->newWords=true;
 }
 
 // Creates a new vocRecords which contains just the wrong words
