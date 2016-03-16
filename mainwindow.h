@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#define ANDROID
 #include <QMainWindow>
 #include <QFile>
 #include <QString>
@@ -11,9 +11,10 @@
 #include <QMessageBox>
 #include <QResizeEvent>
 #include <iostream>
+#include <QSizePolicy>
 #include "customfunctions.h"
-#ifdef ANDROIDD
-#include "managedbmanagedjsondb.h"
+#ifdef ANDROID
+#include "managedjsondb.h"
 #else
 #include "managedb.h"
 #endif
@@ -35,7 +36,7 @@ private:
 
     Ui::MainWindow *ui;
 
-#ifdef ANDROIDD
+#ifdef ANDROID
     ManagedJsonDb db;
 #else
     Managedb db;
@@ -53,8 +54,11 @@ private:
     bool newWords;      //!< True if a new voc pair was insert this variable is set to true so the learning list can be updateted at runtime
     bool firstTry;      //!< True when it was the first try on a voc
     QRect screen;       ///< Holds the size of the screen
+    QRect window;
     bool usingAndroid;
-    QSize startSpacer;
+    QSize spacerSize;
+    QSize spacerSize2;
+    QSize spacerSize3;
 
     const int gap = 10;
 

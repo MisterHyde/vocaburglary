@@ -118,7 +118,7 @@ QList<QStringList> Managedb::getVocs()
     return records;
 }
 
-// Updates the records hold in memory with changed from the database
+// Updates the records hold in memory which changed from the database
 bool Managedb::updateRecAusland(QString aus, QString in)
 {
     QString bubl = "UPDATE " + tableOneName + " SET ausland='" + aus + "' where inland='" + in + "';";
@@ -134,6 +134,13 @@ int Managedb::dbToJson()
     QJsonObject jobj;
     QJsonArray jsonArr;
     QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";");
+    QFile exportFile("vocabulary.json");
+
+    if(!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        qDebug() << "Couldn't open save file. (Managedb::dbToJson())";
+        return -1;
+    }
+    QTextStream out(&exportFile);
 
     while(query.next()){
         QJsonObject vocPair;
@@ -143,20 +150,19 @@ int Managedb::dbToJson()
         vocPair["commentaus"] = query.value(3).toString();
         vocPair["rightt"] = query.value(4).toString();
         vocPair["wrong"] = query.value(5).toString();
-
-        jsonArr.append(vocPair);
+        QJsonDocument jDoc(vocPair);
+        out << jDoc.toJson();
+        //jsonArr.append(vocPair);
     }
-    jobj["Vokabeln"] = jsonArr;
+    //jobj["Vokabeln"] = jsonArr;
 
-    QFile exportFile("vocabulary.json");
+//    if(!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+//        qDebug() << "Couldn't open save file";
+//        return -1;
+//    }
 
-    if(!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)){
-        qDebug() << "Couldn't open save file";
-        return -1;
-    }
-
-    QJsonDocument jdoc(jobj);
-    exportFile.write(jdoc.toJson());
+//    QJsonDocument jdoc(jobj);
+//    exportFile.write(jdoc.toJson());
 
     return 1;
 }

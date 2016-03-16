@@ -8,16 +8,18 @@ MainWindow::MainWindow(QWidget *parent) :
     listIterator(0), newWords(false), firstTry(true), usingAndroid(true)
 {
     ui->setupUi(this);
-
-    startSpacer = ui->verticalSpacer->sizeHint();
+    spacerSize = ui->verticalSpacer->sizeHint();
+    spacerSize2 = ui->verticalSpacer_2->sizeHint();
+    spacerSize3 = ui->verticalSpacer_3->sizeHint();
 
     hideFrames(nothing);
-    
+
 #ifndef ANDROID
     ui->centralWidget->setGeometry(0, 0, ui->startWidget->width() + 20, ui->startWidget->height() + 20);
 #endif
 
     screen = QApplication::desktop()->availableGeometry();
+    window = ui->centralWidget->geometry();
 
     updateVocRecords();
 
@@ -108,6 +110,11 @@ void MainWindow::startExercise(bool)
 // Loads one word pair out of the vocRecords
 void MainWindow::nextVoc(bool)
 {
+    if(vocRecords.size() == 0){
+        hideFrames(nothing);
+        return;
+    }
+
     // If the last record done ask the user if he wants to start over again or leave
     if(listIterator == vocRecords.size()-1){
         listIterator = 0;
@@ -195,7 +202,7 @@ void MainWindow::updateVocRecords()
 {
     vocRecords = db.getVocs();
     if(vocRecords.isEmpty())
-        qDebug() << "Hier ist ein Fehler passiert";
+        qDebug() << "Hier, MainWindow::updateVocRecords(), ist ein Fehler passiert";
     listCount = vocRecords.count();
     newWords = false;
 }
@@ -214,22 +221,35 @@ void MainWindow::hideFrames(Boxes number)
          ui->addWidget->setVisible(true);
          ui->pushButtonBack->setVisible(true);
          ui->verticalSpacer->changeSize(-1, -1, QSizePolicy::Expanding);
+         ui->verticalSpacer_2->changeSize(-1, -1, QSizePolicy::Expanding);
+         ui->verticalSpacer_3->changeSize(-1, -1, QSizePolicy::Expanding);
          break;
         case learnBox:
          ui->learnWidget->setVisible(true);
          ui->pushButtonBack->setVisible(true);
+         ui->pushButtonBack->setGeometry(window.x() - ui->pushButtonBack->height(), window.y() - ui->pushButtonBack->width(), ui->pushButtonBack->width(), ui->pushButton->height());
          ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Expanding);
+         //ui->verticalSpacer_2->changeSize(-1,-1, QSizePolicy::Expanding);
+         //ui->verticalSpacer_3->changeSize(-1,-1, QSizePolicy::Expanding);
          break;
         case listBox:
          ui->vocableTable->setVisible(true);
+         ui->vocableTable->setGeometry(window);
          ui->pushButtonBack->setVisible(true);
          ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Minimum);
+         ui->verticalSpacer_2->changeSize(-1,-1, QSizePolicy::Minimum);
+         ui->verticalSpacer_3->changeSize(-1,-1, QSizePolicy::Minimum);
          break;
         default:
          ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Expanding);
+         ui->verticalSpacer_2->changeSize(-1,-1, QSizePolicy::Expanding);
+         ui->verticalSpacer_3->changeSize(-1,-1, QSizePolicy::Expanding);
          ui->startWidget->setVisible(true);
      }
-     startSpacer = ui->verticalSpacer->sizeHint();
+
+     spacerSize = ui->verticalSpacer->sizeHint();
+     spacerSize2 = ui->verticalSpacer_2->sizeHint();
+     spacerSize3 = ui->verticalSpacer_3->sizeHint();
 }
 
 // Hides irregual input
