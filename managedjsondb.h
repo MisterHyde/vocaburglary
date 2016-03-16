@@ -17,8 +17,8 @@ class ManagedJsonDb : public QWidget
 {
 public:
     ManagedJsonDb();
-    ~ManagedJsonDb();
-    bool insertRec(QString in, QString aus, QString commentin, QString commentaus);
+    //~ManagedJsonDb();
+    int insertRec(QString in, QString aus, QString commentin, QString commentaus);
     QList<QStringList> getVocs();
     bool updateRank(QString in, QString aus, bool right);
     bool updateRecAusland(QString aus, QString in);
@@ -27,7 +27,7 @@ public:
 
 private:
     const QString pathToJson;
-    QFile *database;
+    //QFile database;
     QList<QStringList> records;
 };
 
