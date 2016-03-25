@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#define ANDROID
+//#define ANDROID
 #include <QMainWindow>
 #include <QFile>
 #include <QString>
@@ -59,10 +59,10 @@ private:
     QSize spacerSize;
     QSize spacerSize2;
     QSize spacerSize3;
+    bool languageDirection; ///< true if from auslandisch to inlandisch else false
 
     const int gap = 10;
 
-    void updateVocRecords();
     void hideFrames(Boxes number);
     void chopVocRecords();
     //void resizeEvent(QResizeEvent *event);
@@ -79,6 +79,8 @@ private slots:
     void exportDBtoJson(bool);  ///< Just a caller function for dbToJson() from the class Managedb
     void importDBfromJson(bool);
     void showStartWidget();
+    void changeLanguage(bool); ///< Change the asked language
+    void updateVocRecords(bool);
 };
 
 #endif // MAINWINDOW_H

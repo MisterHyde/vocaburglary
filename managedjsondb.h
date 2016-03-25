@@ -19,7 +19,7 @@ public:
     ManagedJsonDb();
     //~ManagedJsonDb();
     int insertRec(QString in, QString aus, QString commentin, QString commentaus);
-    QList<QStringList> getVocs();
+    QList<QStringList> &getVocs() ;
     bool updateRank(QString in, QString aus, bool right);
     bool updateRecAusland(QString aus, QString in);
     int dbToJson();
@@ -28,6 +28,7 @@ public:
 private:
     const QString pathToJson;
     //QFile database;
+    QStringList recordsIndex;
     QList<QStringList> records;
 };
 

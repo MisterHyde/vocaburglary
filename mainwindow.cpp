@@ -20,8 +20,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     screen = QApplication::desktop()->availableGeometry();
     window = ui->centralWidget->geometry();
+    languageDirection = true;
 
-    updateVocRecords();
+    updateVocRecords(true);
 
     connect(ui->pushButtonINSERT, SIGNAL(clicked(bool)), this, SLOT(insert(bool)));
     connect(ui->pushButtonStartExercise, SIGNAL(clicked(bool)), this, SLOT(startExercise(bool)));
@@ -33,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonExportDB, SIGNAL(clicked(bool)), this, SLOT(exportDBtoJson(bool)));
     connect(ui->pushButton, SIGNAL(clicked(bool)), this, SLOT(importDBfromJson(bool)));
     connect(ui->pushButtonBack, SIGNAL(clicked()), this, SLOT(showStartWidget()));
+    connect(ui->pushButtonChLang, SIGNAL(clicked(bool)), this, SLOT(changeLanguage(bool)));
+    connect(ui->pushButtonRandomize, SIGNAL(clicked(bool)), this, SLOT(updateVocRecords(bool)));
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 
     //CustomFuctions::parseXml("DCE_most_frequent_words_07_08_basic_list_v2.xml");
@@ -41,7 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::showList(bool)
 {
     if(newWords){
-        updateVocRecords();
+        updateVocRecords(true);
+        newWords = false;
     }
 
     //TODO: Trying to set the size of the whole window doesn't really works and i don't know for what the x,y coordiantes does
@@ -88,6 +92,7 @@ MainWindow::~MainWindow()
 // Ruft die Methode von managedb auf, die den insert statement ausführt, und leert die Eingabefelder
 void MainWindow::insert(bool)
 {
+    //TODO If entry exists show a message on the status bar
     bool success = db.insertRec(ui->inIn->text(), ui->inAus->text(), ui->inKommentar->text(), ui->ausKommentar->text());
 
     if(success){
@@ -112,9 +117,11 @@ void MainWindow::nextVoc(bool)
 {
     if(vocRecords.size() == 0){
         hideFrames(nothing);
+        ui->statusBar->showMessage(tr("Error: No words in cache..."));
         return;
     }
 
+    // TODO Doppeltgemoppelt?
     // If the last record done ask the user if he wants to start over again or leave
     if(listIterator == vocRecords.size()-1){
         listIterator = 0;
@@ -132,21 +139,32 @@ void MainWindow::nextVoc(bool)
 
     // If there are new words inserted in this session reload the vocabular list
     if(newWords){
-        updateVocRecords();
+        ui->statusBar->showMessage(tr("New words occured reload list"), 10000);
+        updateVocRecords(true);
         listIterator = 0;
     }
 
     firstTry = true;
     // Save the current record in the attributes
     currInOrigin = vocRecords.at(listIterator).at(0);
-    QString buff = currInOrigin.trimmed();
-    currIn = buff.split(QRegExp("\\,"));
-    currAus = vocRecords.at(listIterator).at(1);
-    currComIn = vocRecords.at(listIterator).at(2);
-    currComAus = vocRecords.at(listIterator).at(3);
-    currCorrect = &vocRecords[listIterator][4];
-    // If the list is at the end set the iterator to the begin else to the next record
-    if(listIterator < vocRecords.size()-1){
+    // Fill the attributes depending on the languageDirection
+    if(languageDirection){
+        QString buff = currInOrigin.trimmed();
+        currIn = buff.split(QRegExp("\\,"));
+        currAus = vocRecords.at(listIterator).at(1);
+        currComIn = vocRecords.at(listIterator).at(2);
+        currComAus = vocRecords.at(listIterator).at(3);
+        currCorrect = &vocRecords[listIterator][4];
+    }
+    else{
+        currIn = QStringList(vocRecords.at(listIterator).at(1));
+        currAus = vocRecords.at(listIterator).at(0);
+        currComIn = vocRecords.at(listIterator).at(3);
+        currComAus = vocRecords.at(listIterator).at(2);
+        currCorrect = &vocRecords[listIterator][4];
+    }
+    // Till the end of the list load the next word
+    if(listIterator < vocRecords.size()-1){ // TODO Doppeltgemoppelt?
         listIterator += 1;
         ui->vocable->setText(currAus + currComAus);
         ui->translation->setText("");
@@ -177,7 +195,11 @@ void MainWindow::checkVoc(bool)
             ui->successLabel->setText("YEAH!");
         }
         if(firstTry){
-            db.updateRank(currInOrigin, currAus, true);
+            //updateRank needs as second parameter the foreign word
+            if(languageDirection)
+                db.updateRank(currInOrigin, currAus, true);
+            else
+                db.updateRank(currInOrigin, currIn.first(), true);
         }
         nextVoc(false);
     }
@@ -185,7 +207,12 @@ void MainWindow::checkVoc(bool)
         if(!currComIn.isEmpty())
             currComIn = ", " + currComIn;
         ui->successLabel->setText("Falsch: " + CustomFunctions::undoStringList(currIn) + currComIn);
-        db.updateRank(currInOrigin, currAus, false);
+        //updateRank needs as second parameter the foreign word
+        if(languageDirection)
+            db.updateRank(currInOrigin, currAus, false);
+        else
+            db.updateRank(currInOrigin, currIn.first(), false);
+
         firstTry = false;
     }
 }
@@ -198,7 +225,7 @@ void MainWindow::addVoc(bool)
 }
 
 // Loads the voc from the database and save them in 'vocRecords', sets the listCount and 'newWords' to false
-void MainWindow::updateVocRecords()
+void MainWindow::updateVocRecords(bool)
 {
     vocRecords = db.getVocs();
     if(vocRecords.isEmpty())
@@ -310,4 +337,25 @@ void MainWindow::chopVocRecords()
 void MainWindow::showStartWidget()
 {
     hideFrames(nothing);
+}
+
+
+void MainWindow::changeLanguage(bool)
+{
+    // Change the text displayed by the pushed button
+    QString newText = "";
+    QStringList oldText = ui->pushButtonChLang->text().split(" ");
+
+    if(languageDirection){
+        newText = oldText.at(0) + " <- " + oldText.at(2);
+    }
+    else{
+        newText = oldText.at(0) + " -> " + oldText.at(2);
+    }
+
+    ui->pushButtonChLang->setText(newText);
+    languageDirection = !languageDirection;
+
+    listIterator = 0;
+    nextVoc(true);
 }

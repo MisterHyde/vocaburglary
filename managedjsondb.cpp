@@ -3,8 +3,19 @@
 ManagedJsonDb::ManagedJsonDb()
     :pathToJson("vocabulary.json")
 {
-    //database.setFileName("vocabulary.json");
-    //database = new QFile("vocabulary.json");
+//    QFile database(pathToJson);
+//    if(!database.open(QIODevice::ReadOnly | QIODevice::Text)){
+//        qDebug() << "Couldn't open read file";
+//        //return -1;
+//    }
+//    QFile backup("." + pathToJson + ".bak");
+//    if(!backup.open(QIODevice::WriteOnly | QIODevice::Text)){
+//        qDebug() << "Couldn't open backup file";
+//        //return -1;
+//    }
+//    QTextStream in(&database);
+//    QTextStream out(&backup);
+//    out << in.readAll();
 }
 
 //ManagedJsonDb::~ManagedJsonDb()
@@ -37,15 +48,20 @@ int ManagedJsonDb::insertRec(QString in, QString aus, QString commentin, QString
     return 1;
 }
 
-QList<QStringList> ManagedJsonDb::getVocs()
+QList<QStringList> &ManagedJsonDb::getVocs()
 {
     QFile database(pathToJson);
     if(!database.open(QIODevice::ReadOnly | QIODevice::Text)){
         qDebug() << "Fehler beim öffnen der Datei (ManagedJsonDb::getVocs())";
-        return QList<QStringList>();
+        records  = QList<QStringList>();
+        return records;
     }
 
     QTextStream read(&database);
+
+    // Open a backupfile and write all data from
+    database.copy("." + pathToJson + ".bak");
+
     QString jsonElement = "";
 
     while(!read.atEnd()){
@@ -62,6 +78,7 @@ QList<QStringList> ManagedJsonDb::getVocs()
             record.append(jObj.value("wrong").toString());
 
             records.append(record);
+            recordsIndex.append(jObj.value("ausland").toString());
             jsonElement = "";
         }
     }
@@ -82,7 +99,17 @@ int ManagedJsonDb::jsonToDb()
 
 bool ManagedJsonDb::updateRank(QString in, QString aus, bool right)
 {
-    return false;
+    if(right){
+        QStringList buff = records.at(recordsIndex.indexOf(aus));
+        int rightCount = buff.at(4).toInt() + 1;
+        records[recordsIndex.indexOf(aus)][4] = rightCount;
+    }
+    else{
+        QStringList buff = records.at(recordsIndex.indexOf(aus));
+        int rightCount = buff.at(4).toInt() + 1;
+        records[recordsIndex.indexOf(aus)][4] = rightCount;
+    }
+    return true;
 }
 
 bool ManagedJsonDb::updateRecAusland(QString aus, QString in)
