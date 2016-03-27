@@ -1,0 +1,3 @@
+*.user*
+build-Vokabeln-Desktop_5_4_2_with_clang-Debug/
+.ycm*
