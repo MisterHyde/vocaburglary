@@ -31,6 +31,7 @@ class Managedb : public QWidget
     bool updateRecAusland(QString newText, QString oldIn, QString oldOut, int which);
     int dbToJson();
     int jsonToDb();
+    void createDb(bool android);
 
  private:
     QSqlDatabase db;
