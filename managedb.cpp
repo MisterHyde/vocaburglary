@@ -221,3 +221,60 @@ int Managedb::jsonToDb()
     }
     return success.count(true);
 }
+
+
+void Managedb::createDb(bool android)
+{
+    QString queryText1;
+    QString queryText2;
+
+    if(!android){
+        queryText1 = "CREATE TABLE vocabulary(\
+            inland varchar(40),\
+            ausland varchar(40),\
+            commentin varchar(40),\
+            commentaus varchar(40),\
+            rightt integer,\
+            wrong integer,\
+            rank integer,\
+            CONSTRAINT pk_vocabulary Primary Key (ausland),\
+            CONSTRAINT u_oid Unique (oid),\
+            CONSTRAINT u_vocabulary Unique(ausland)\
+         )WITH OIDS;";
+
+         queryText2 = "CREATE TABLE irregular(\
+            infinitive varchar(40),\
+            I varchar(40),\
+            you varchar(40),\
+            she varchar(40),\
+            we varchar(40),\
+            you2 varchar(40),\
+            they varchar(40),\
+            CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
+         )WITH OIDS;";
+        }
+    else{
+        queryText1 = "CREATE TABLE vocabulary(\
+            inland varchar(40),\
+            ausland varchar(40),\
+            commentin varchar(40),\
+            commentaus varchar(40),\
+            rightt integer,\
+            wrong integer,\
+            rank integer,\
+            CONSTRAINT pk_vocabulary Primary Key (ausland),\
+            CONSTRAINT u_vocabulary Unique(ausland)\
+         );";
+
+         queryText2 = "CREATE TABLE irregular(\
+            infinitive varchar(40),\
+            I varchar(40),\
+            you varchar(40),\
+            she varchar(40),\
+            we varchar(40),\
+            you2 varchar(40),\
+            they varchar(40),\
+            CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
+         );";
+    }
+}

@@ -292,7 +292,7 @@ void MainWindow::hideIrregular(int check)
 
     if(check == 2){
         ui->containerWidget_1->setVisible(true);
-        ui->containerWidget_2->setVisible(true);
+        ui->containerFelix the MunchingWidget_2->setVisible(true);
     }
 }
 
@@ -368,6 +368,7 @@ void MainWindow::changedWord(int row, int column)
     QString newText, oldIn, oldOut;
     newText = ui->vocableTable->item(row, column)->text();
     // TODO Check for double commas
+	
     int index = 0;
 
     if(column == 1){
