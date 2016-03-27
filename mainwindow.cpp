@@ -367,7 +367,7 @@ void MainWindow::changedWord(int row, int column)
 {
     QString newText, oldIn, oldOut;
     newText = ui->vocableTable->item(row, column)->text();
-
+    // TODO Check for double commas
     int index = 0;
 
     if(column == 1){
