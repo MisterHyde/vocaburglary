@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonBack, SIGNAL(clicked()), this, SLOT(showStartWidget()));
     connect(ui->pushButtonChLang, SIGNAL(clicked(bool)), this, SLOT(changeLanguage(bool)));
     connect(ui->pushButtonRandomize, SIGNAL(clicked(bool)), this, SLOT(updateVocRecords(bool)));
+
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 
     //CustomFuctions::parseXml("DCE_most_frequent_words_07_08_basic_list_v2.xml");
@@ -81,6 +82,7 @@ void MainWindow::showList(bool)
     //ui->vocableTable->set
     //QRect g = ui->verticalSpacer->geometry();
     //ui->verticalSpacer->setGeometry(QRect(ui->verticalSpacer->x(), ui->verticalSpacer->y()));
+    connect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
 }
 
 MainWindow::~MainWindow()
@@ -260,6 +262,7 @@ void MainWindow::hideFrames(Boxes number)
          //ui->verticalSpacer_3->changeSize(-1,-1, QSizePolicy::Expanding);
          break;
         case listBox:
+         disconnect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
          ui->vocableTable->setVisible(true);
          ui->vocableTable->setGeometry(window);
          ui->pushButtonBack->setVisible(true);
@@ -358,4 +361,28 @@ void MainWindow::changeLanguage(bool)
 
     listIterator = 0;
     nextVoc(true);
+}
+
+void MainWindow::changedWord(int row, int column)
+{
+    QString newText, oldIn, oldOut;
+    newText = ui->vocableTable->item(row, column)->text();
+
+    int index = 0;
+
+    if(column == 1){
+        index = 0;
+    }
+    else{
+        index = 1;
+    }
+
+    oldOut = ui->vocableTable->item(row, index)->text();
+    oldIn = vocRecords.at(row).at(index);
+    QStringList buff = vocRecords.at(row);
+    //buff.insert(index,newText);
+    buff.replace(index, newText);
+    vocRecords.insert(row, buff);
+
+    db.updateRecAusland(newText, oldIn, oldOut, column);
 }

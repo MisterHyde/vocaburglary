@@ -119,11 +119,19 @@ QList<QStringList> Managedb::getVocs()
 }
 
 // Updates the records hold in memory which changed from the database
-bool Managedb::updateRecAusland(QString aus, QString in)
+bool Managedb::updateRecAusland(QString newText, QString oldIn, QString oldOut, int which)
 {
-    QString bubl = "UPDATE " + tableOneName + " SET ausland='" + aus + "' where inland='" + in + "';";
-    //qDebug() << "updateRecAusland: " << bubl;
-    QSqlQuery query(bubl);
+    QString blubl = "UPDATE " + tableOneName;
+
+    if(which == 0)
+        blubl += " SET ausland='";
+    else if(which == 1)
+        blubl += " SET inland='";
+
+    blubl += newText + "' WHERE inland='" + oldIn + "' AND ausland='" + oldOut + "';";
+
+    qDebug() << "updateRecAusland: " << blubl;
+    QSqlQuery query(blubl);
     query.exec();
 
     return query.isActive();

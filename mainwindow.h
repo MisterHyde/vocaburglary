@@ -81,6 +81,7 @@ private slots:
     void showStartWidget();
     void changeLanguage(bool); ///< Change the asked language
     void updateVocRecords(bool);
+    void changedWord(int row, int column); ///< Slot which writes the changed word to the datarecord
 };
 
 #endif // MAINWINDOW_H
