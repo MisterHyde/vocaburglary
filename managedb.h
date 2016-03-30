@@ -11,6 +11,7 @@
 #include <QJsonObject>
 #include <QFile>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <algorithm>
 #include <random>
 #include <chrono>
@@ -22,21 +23,29 @@ class Managedb;
 
 class Managedb : public QWidget
 {
+    Q_OBJECT
+
  public:
     // Functions to work with a SQL database
-    Managedb();
+    explicit Managedb(QWidget *parent = 0);
     bool insertRec(QString in, QString aus, QString commentin, QString commentaus);
     QList<QStringList> getVocs();
     bool updateRank(QString in, QString aus, bool right);
-    bool updateRecAusland(QString newText, QString oldIn, QString oldOut, int which);
+    bool updateRecAusland(QString newText, QString oldOut, QString oldIn, int which);
     int dbToJson();
     int jsonToDb();
-    void createDb(bool android);
+    bool getSuccessOpening();
 
  private:
     QSqlDatabase db;
     const QString tableOneName;
     const QString tableTwoName;
+    bool successOpening;
+private slots:
+    void createDb();
+
+signals:
+    void quit();
 };
 
 #endif // MANAGEDB_H

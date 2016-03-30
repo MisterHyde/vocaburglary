@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     spacerSize2 = ui->verticalSpacer_2->sizeHint();
     spacerSize3 = ui->verticalSpacer_3->sizeHint();
 
+    db = new Managedb(this);
+
     hideFrames(nothing);
 
 #ifndef ANDROID
@@ -36,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonBack, SIGNAL(clicked()), this, SLOT(showStartWidget()));
     connect(ui->pushButtonChLang, SIGNAL(clicked(bool)), this, SLOT(changeLanguage(bool)));
     connect(ui->pushButtonRandomize, SIGNAL(clicked(bool)), this, SLOT(updateVocRecords(bool)));
+    connect(db, SIGNAL(quit()), this, SLOT(close()));
 
     //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
 
@@ -95,7 +98,7 @@ MainWindow::~MainWindow()
 void MainWindow::insert(bool)
 {
     //TODO If entry exists show a message on the status bar
-    bool success = db.insertRec(ui->inIn->text(), ui->inAus->text(), ui->inKommentar->text(), ui->ausKommentar->text());
+    bool success = db->insertRec(ui->inIn->text(), ui->inAus->text(), ui->inKommentar->text(), ui->ausKommentar->text());
 
     if(success){
         ui->inIn->setText("");
@@ -109,6 +112,12 @@ void MainWindow::insert(bool)
 // Shows the exercise frame and loads the first word pair
 void MainWindow::startExercise(bool)
 {
+    if(vocRecords.size() == 0){
+        hideFrames(nothing);
+        ui->statusBar->showMessage(tr("Error: No words in cache..."));
+        return;
+    }
+
     hideFrames(learnBox);
 
     this->nextVoc(true);
@@ -117,15 +126,14 @@ void MainWindow::startExercise(bool)
 // Loads one word pair out of the vocRecords
 void MainWindow::nextVoc(bool)
 {
-    if(vocRecords.size() == 0){
-        hideFrames(nothing);
-        ui->statusBar->showMessage(tr("Error: No words in cache..."));
-        return;
+    // If there are new words inserted in this session reload the vocabular list
+    if(newWords){
+        ui->statusBar->showMessage(tr("New words occured reload list"), 10000);
+        updateVocRecords(true);
+        listIterator = 0;
     }
 
-    // TODO Doppeltgemoppelt?
-    // If the last record done ask the user if he wants to start over again or leave
-    if(listIterator == vocRecords.size()-1){
+    if(listIterator == vocRecords.size()){
         listIterator = 0;
         QMessageBox box;
         box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -139,13 +147,6 @@ void MainWindow::nextVoc(bool)
         }
     }
 
-    // If there are new words inserted in this session reload the vocabular list
-    if(newWords){
-        ui->statusBar->showMessage(tr("New words occured reload list"), 10000);
-        updateVocRecords(true);
-        listIterator = 0;
-    }
-
     firstTry = true;
     // Save the current record in the attributes
     currInOrigin = vocRecords.at(listIterator).at(0);
@@ -156,23 +157,40 @@ void MainWindow::nextVoc(bool)
         currAus = vocRecords.at(listIterator).at(1);
         currComIn = vocRecords.at(listIterator).at(2);
         currComAus = vocRecords.at(listIterator).at(3);
-        currCorrect = &vocRecords[listIterator][4];
+        currCorrect = &vocRecords[listIterator][6];
     }
     else{
         currIn = QStringList(vocRecords.at(listIterator).at(1));
         currAus = vocRecords.at(listIterator).at(0);
         currComIn = vocRecords.at(listIterator).at(3);
         currComAus = vocRecords.at(listIterator).at(2);
-        currCorrect = &vocRecords[listIterator][4];
+        currCorrect = &vocRecords[listIterator][6];
     }
     // Till the end of the list load the next word
-    if(listIterator < vocRecords.size()-1){ // TODO Doppeltgemoppelt?
-        listIterator += 1;
+//    if(listIterator <= vocRecords.size()-1){ // TODO Doppeltgemoppelt?
         ui->vocable->setText(currAus + currComAus);
         ui->translation->setText("");
         ui->labelRightCount->setText("Right counter: " + vocRecords.at(listIterator).at(4));
         ui->labelWrongCount->setText("Wrong counter " + vocRecords.at(listIterator).at(5));
-    }
+        listIterator += 1;
+
+        // TODO Doppeltgemoppelt?
+        // If the last record done ask the user if he wants to start over again or leave
+
+//    }
+//    else{
+//        listIterator = 0;
+//        QMessageBox box;
+//        box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+//        box.setText(tr("Congratulations!\n You've completed the list. Want some new?"));
+//        // If the "Ok" button was clicked mix the vocabulary new and start over again
+//        if(box.exec() == QMessageBox::Ok){
+//            chopVocRecords();
+//        }
+//        else{
+//            hideFrames(nothing);
+//        }
+//    }
 }
 
 // Compare if the user input is equal to the right translation, saved in "currIn"
@@ -194,14 +212,14 @@ void MainWindow::checkVoc(bool)
             ui->successLabel->setText("YEAH but also: " + buff);
         }
         else{
-            ui->successLabel->setText("YEAH!");
+            ui->successLabel->setText("YEAH!" + ui->translation->text() + tr(" war richtig :-)"));
         }
         if(firstTry){
             //updateRank needs as second parameter the foreign word
             if(languageDirection)
-                db.updateRank(currInOrigin, currAus, true);
+                db->updateRank(currInOrigin, currAus, true);
             else
-                db.updateRank(currInOrigin, currIn.first(), true);
+                db->updateRank(currInOrigin, currIn.first(), true);
         }
         nextVoc(false);
     }
@@ -211,9 +229,9 @@ void MainWindow::checkVoc(bool)
         ui->successLabel->setText("Falsch: " + CustomFunctions::undoStringList(currIn) + currComIn);
         //updateRank needs as second parameter the foreign word
         if(languageDirection)
-            db.updateRank(currInOrigin, currAus, false);
+            db->updateRank(currInOrigin, currAus, false);
         else
-            db.updateRank(currInOrigin, currIn.first(), false);
+            db->updateRank(currInOrigin, currIn.first(), false);
 
         firstTry = false;
     }
@@ -229,7 +247,7 @@ void MainWindow::addVoc(bool)
 // Loads the voc from the database and save them in 'vocRecords', sets the listCount and 'newWords' to false
 void MainWindow::updateVocRecords(bool)
 {
-    vocRecords = db.getVocs();
+    vocRecords = db->getVocs();
     if(vocRecords.isEmpty())
         qDebug() << "Hier, MainWindow::updateVocRecords(), ist ein Fehler passiert";
     listCount = vocRecords.count();
@@ -292,7 +310,7 @@ void MainWindow::hideIrregular(int check)
 
     if(check == 2){
         ui->containerWidget_1->setVisible(true);
-        ui->containerFelix the MunchingWidget_2->setVisible(true);
+        ui->containerWidget_2->setVisible(true);
     }
 }
 
@@ -305,12 +323,12 @@ void MainWindow::resizeWindow()
 
 void MainWindow::exportDBtoJson(bool)
 {
-    db.dbToJson();
+    db->dbToJson();
 }
 
 void MainWindow::importDBfromJson(bool)
 {
-    db.jsonToDb();
+    db->jsonToDb();
     this->newWords=true;
 }
 
@@ -368,7 +386,7 @@ void MainWindow::changedWord(int row, int column)
     QString newText, oldIn, oldOut;
     newText = ui->vocableTable->item(row, column)->text();
     // TODO Check for double commas
-	
+
     int index = 0;
 
     if(column == 1){
@@ -383,7 +401,13 @@ void MainWindow::changedWord(int row, int column)
     QStringList buff = vocRecords.at(row);
     //buff.insert(index,newText);
     buff.replace(index, newText);
-    vocRecords.insert(row, buff);
 
-    db.updateRecAusland(newText, oldIn, oldOut, column);
+    if(newText.isEmpty()){
+        vocRecords.removeAt(row);
+    }
+    else{
+        vocRecords.insert(row, buff);
+    }
+
+    db->updateRecAusland(newText, oldIn, oldOut, column);
 }

@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-//#define ANDROID
+#define ANDROID
 #include <QMainWindow>
 #include <QFile>
 #include <QString>
@@ -13,11 +13,11 @@
 #include <iostream>
 #include <QSizePolicy>
 #include "customfunctions.h"
-#ifdef ANDROID
-#include "managedjsondb.h"
-#else
+//#ifdef ANDROID
+//#include "managedjsondb.h"
+//#else
 #include "managedb.h"
-#endif
+//#endif
 
 namespace Ui {
 class MainWindow;
@@ -36,11 +36,11 @@ private:
 
     Ui::MainWindow *ui;
 
-#ifdef ANDROID
-    ManagedJsonDb db;
-#else
-    Managedb db;
-#endif
+//#ifdef ANDROID
+//    ManagedJsonDb db;
+//#else
+    Managedb *db;
+//#endif
     QList<QStringList> vocRecords;  ///< List with all
     // Instead of using for the current word varables for all information use a pointer to the place in the data structure
     QStringList currIn;         ///< Current list of translations

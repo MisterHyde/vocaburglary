@@ -1,19 +1,33 @@
-
-
- #include "managedb.h"
+#include "managedb.h"
 
 /**
  * @brief Managedb::Managedb
  */
-Managedb::Managedb()
-    :tableOneName("vocabulary"), tableTwoName("irregular")
+Managedb::Managedb(QWidget *parent)
+    :QWidget(parent),
+      tableOneName("vocabulary"), tableTwoName("irregular")
 {
+#ifndef ANDROID
     db = QSqlDatabase::addDatabase("QPSQL");
     db.setHostName("localhost");
     db.setDatabaseName("englishdic");
     db.setUserName("felix");
     db.setPassword("Augsburg1");
-    db.open();
+#else
+    db = QSqlDatabase::addDatabase("SQLITE");
+    db.setDatabaseName("./vocaburglary.db3");
+#endif
+    successOpening = db.open();
+    if(!successOpening){
+        QMessageBox msgBox;
+        msgBox.setText(tr("The table couldn't be opened. If the database is running click yes to create the table"));
+        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        int button = msgBox.exec();
+        if(button == QMessageBox::Ok)
+            createDb();
+        else
+            emit quit();
+    }
 }
 
 // The first two parameters specifing the primary key
@@ -82,7 +96,8 @@ QList<QStringList> Managedb::getVocs()
     QList<int> intList;
     int listCount;
 
-    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";");
+    QString queryText = "SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";";
+    QSqlQuery query(queryText);
 
     while(query.next()) {
         record.append(query.value(0).toString());
@@ -119,8 +134,18 @@ QList<QStringList> Managedb::getVocs()
 }
 
 // Updates the records hold in memory which changed from the database
-bool Managedb::updateRecAusland(QString newText, QString oldIn, QString oldOut, int which)
+bool Managedb::updateRecAusland(QString newText, QString oldOut, QString oldIn, int which)
 {
+    QSqlQuery query;
+
+    if(newText.isEmpty()){
+        QString queryText = "DELETE FROM " + tableOneName + " WHERE inland = '" + oldIn + "' AND ausland = '"
+                + oldOut + "';";
+        query.exec(queryText);
+
+        return query.isActive();
+    }
+
     QString blubl = "UPDATE " + tableOneName;
 
     if(which == 0)
@@ -131,8 +156,7 @@ bool Managedb::updateRecAusland(QString newText, QString oldIn, QString oldOut, 
     blubl += newText + "' WHERE inland='" + oldIn + "' AND ausland='" + oldOut + "';";
 
     qDebug() << "updateRecAusland: " << blubl;
-    QSqlQuery query(blubl);
-    query.exec();
+    query.exec(blubl);
 
     return query.isActive();
 }
@@ -204,7 +228,8 @@ int Managedb::jsonToDb()
     QVariantList vList = jArr.toVariantList();
     // Use c++11 "foreach" loop each entry in vList is mapped to v
     for(QVariant v: vList){
-        query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong) VALUES(:inland, :ausland, :commentin, :commentaus, :rightt, :wrong);");
+        query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong)\
+                     VALUES(:inland, :ausland, :commentin, :commentaus, :rightt, :wrong);");
         // Ok now finally we convert every entry v to a QMap and can work with them now...
         QMap<QString,QVariant> map = v.toMap();
         query.bindValue(QString(":inland"), map.value("inland"));
@@ -223,58 +248,67 @@ int Managedb::jsonToDb()
 }
 
 
-void Managedb::createDb(bool android)
+void Managedb::createDb()
 {
     QString queryText1;
     QString queryText2;
 
-    if(!android){
-        queryText1 = "CREATE TABLE vocabulary(\
-            inland varchar(40),\
-            ausland varchar(40),\
-            commentin varchar(40),\
-            commentaus varchar(40),\
-            rightt integer,\
-            wrong integer,\
-            rank integer,\
-            CONSTRAINT pk_vocabulary Primary Key (ausland),\
-            CONSTRAINT u_oid Unique (oid),\
-            CONSTRAINT u_vocabulary Unique(ausland)\
-         )WITH OIDS;";
+#ifndef ANDROID
+    queryText1 = "CREATE TABLE vocabulary(\
+        inland varchar(40),\
+        ausland varchar(40),\
+        commentin varchar(40),\
+        commentaus varchar(40),\
+        rightt integer,\
+        wrong integer,\
+        rank integer,\
+        CONSTRAINT pk_vocabulary Primary Key (ausland),\
+        CONSTRAINT u_oid Unique (oid),\
+        CONSTRAINT u_vocabulary Unique(ausland)\
+     )WITH OIDS;";
 
-         queryText2 = "CREATE TABLE irregular(\
-            infinitive varchar(40),\
-            I varchar(40),\
-            you varchar(40),\
-            she varchar(40),\
-            we varchar(40),\
-            you2 varchar(40),\
-            they varchar(40),\
-            CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
-         )WITH OIDS;";
-        }
-    else{
-        queryText1 = "CREATE TABLE vocabulary(\
-            inland varchar(40),\
-            ausland varchar(40),\
-            commentin varchar(40),\
-            commentaus varchar(40),\
-            rightt integer,\
-            wrong integer,\
-            rank integer,\
-            CONSTRAINT pk_vocabulary Primary Key (ausland),\
-            CONSTRAINT u_vocabulary Unique(ausland)\
-         );";
+     queryText2 = "CREATE TABLE irregular(\
+        infinitive varchar(40),\
+        I varchar(40),\
+        you varchar(40),\
+        she varchar(40),\
+        we varchar(40),\
+        you2 varchar(40),\
+        they varchar(40),\
+        CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
+     )WITH OIDS;";
+#else
+    queryText1 = "CREATE TABLE vocabulary(\
+        inland varchar(40),\
+        ausland varchar(40),\
+        commentin varchar(40),\
+        commentaus varchar(40),\
+        rightt integer,\
+        wrong integer,\
+        rank integer,\
+        CONSTRAINT pk_vocabulary Primary Key (ausland),\
+        CONSTRAINT u_vocabulary Unique(ausland)\
+     );";
 
-         queryText2 = "CREATE TABLE irregular(\
-            infinitive varchar(40),\
-            I varchar(40),\
-            you varchar(40),\
-            she varchar(40),\
-            we varchar(40),\
-            you2 varchar(40),\
-            they varchar(40),\
-            CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
-         );";
-    }
+     queryText2 = "CREATE TABLE irregular(\
+        infinitive varchar(40),\
+        I varchar(40),\
+        you varchar(40),\
+        she varchar(40),\
+        we varchar(40),\
+        you2 varchar(40),\
+        they varchar(40),\
+        CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
+     );";
+#endif
+
+     qDebug() << queryText1;
+     QSqlQuery query(queryText1);
+     qDebug() << query.exec();
+
+}
+
+bool Managedb::getSuccessOpening()
+{
+    return successOpening;
 }
