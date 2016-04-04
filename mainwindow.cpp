@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(db, SIGNAL(quit()), this, SLOT(close()));
     connect(ui->pushButtonConfig, SIGNAL(clicked(bool)), this, SLOT(showConfig(bool)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(changedRightCounter(int)));
+    connect(ui->pushButtonShowRight, SIGNAL(clicked(bool)), this, SLOT(vocTableShowRight(bool)));
 }
 
 void MainWindow::showList(bool)
@@ -247,7 +248,7 @@ void MainWindow::hideFrames(Boxes number)
 {
      ui->addWidget->setVisible(false);
      ui->learnWidget->setVisible(false);
-     ui->vocableTable->setVisible(false);
+     ui->tableWidget->setVisible(false);
      ui->pushButtonBack->setVisible(false);
      ui->startWidget->setVisible(false);
      ui->configWidget->setVisible(false);
@@ -270,7 +271,10 @@ void MainWindow::hideFrames(Boxes number)
          break;
         case Boxes::listBox:
          disconnect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
-         ui->vocableTable->setVisible(true);
+         ui->tableWidget->setVisible(true);
+         ui->tableWidget->setGeometry(window);
+         ui->pushButtonShowRight->setText(tr("Show Config"));
+         ui->vocableTable->hideColumn(2);
          ui->vocableTable->setGeometry(window);
          ui->pushButtonBack->setVisible(true);
          ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Minimum);
@@ -458,4 +462,16 @@ void MainWindow::loadConfig()
 void MainWindow::changedRightCounter(int newRight)
 {
     rightCounter = newRight;
+}
+
+void MainWindow::vocTableShowRight(bool)
+{
+    if(ui->pushButtonShowRight->text() == tr("Show Right")){
+        ui->pushButtonShowRight->setText(tr("Hide Right"));
+        ui->vocableTable->showColumn(2);
+    }
+    else{
+        ui->pushButtonShowRight->setText(tr("Show Right"));
+        ui->vocableTable->hideColumn(2);
+    }
 }

@@ -90,6 +90,7 @@ private slots:
     void showConfig(bool);
     void saveConfig(bool);
     void changedRightCounter(int newRight);
+    void vocTableShowRight(bool);
 };
 
 #endif // MAINWINDOW_H
