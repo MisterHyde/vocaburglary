@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     db = new Managedb(this);
 
-    hideFrames(nothing);
+    hideFrames(Boxes::nothing);
 
 #ifndef ANDROID
     ui->centralWidget->setGeometry(0, 0, ui->startWidget->width() + 20, ui->startWidget->height() + 20);
@@ -39,10 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonChLang, SIGNAL(clicked(bool)), this, SLOT(changeLanguage(bool)));
     connect(ui->pushButtonRandomize, SIGNAL(clicked(bool)), this, SLOT(updateVocRecords(bool)));
     connect(db, SIGNAL(quit()), this, SLOT(close()));
-
-    //connect(ui->centralWidget, SIGNAL(), this, SLOT(resizeWindow()));
-
-    //CustomFuctions::parseXml("DCE_most_frequent_words_07_08_basic_list_v2.xml");
+    connect(ui->pushButtonConfig, SIGNAL(clicked(bool)), this, SLOT(showConfig(bool)));
 }
 
 void MainWindow::showList(bool)
@@ -52,45 +49,34 @@ void MainWindow::showList(bool)
         newWords = false;
     }
 
-    //TODO: Trying to set the size of the whole window doesn't really works and i don't know for what the x,y coordiantes does
-    //ui->centralWidget->setGeometry(10, 10, screen.width() - 10 , screen.height() - 10);
-    //qDebug() << "screenheight: " << screen.width() << "; screenheight: " << screen.height();
-    //this->setCentralWidget(ui->vocableTable);
-    //this->adjustSize();
+    hideFrames(Boxes::listBox);
 
-    //QRect screenRect;
-    hideFrames(listBox);
-    // Strange things I do here trying to make a dynamic window size...
-    //ui->vocableTable->setGeometry(gap, gap, ui->vocableTable->geometry().width(), ui->centralWidget->height() - ui->startWidget->height() - ui->statusBar->height() + gap);
-    //ui->vocableTable->setGeometry(gap, gap, ui->centralWidget->width() - 2*gap,ui->startWidget->y() - 2*gap);
-    //qDebug() << "height: " << ui->centralWidget->height();
     // Inserts in a QTableWidget as many items as the variable 'listCount' tells
     ui->vocableTable->setRowCount(listCount);
     for(int i=0; i<listCount; i++){
         QTableWidgetItem *in = new QTableWidgetItem(vocRecords.at(i).at(0));
         QTableWidgetItem *aus = new QTableWidgetItem(vocRecords.at(i).at(1));
+        QTableWidgetItem *right = new QTableWidgetItem(vocRecords.at(i).at(4));
         ui->vocableTable->setItem(i, 0, aus);
         ui->vocableTable->setItem(i, 1, in);
+        ui->vocableTable->setItem(i, 2, right);
         //qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
     }
 
     // arrange the size of the columns
-    //ui->vocableTable->setColumnWidth(0, 150);
-    //ui->vocableTable->setColumnWidth(1, 150);
     QHeaderView* header = ui->vocableTable->horizontalHeader();
     header->setStretchLastSection(true);
 
     QTableWidget *tw = ui->vocableTable;
     ui->vocableTable->setMaximumSize(CustomFunctions::myGetQTableWidgetSize(tw));
-    //ui->vocableTable->set
-    //QRect g = ui->verticalSpacer->geometry();
-    //ui->verticalSpacer->setGeometry(QRect(ui->verticalSpacer->x(), ui->verticalSpacer->y()));
+
     connect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete db;
 }
 
 // Slot der aktiviert wird wenn der Button "INSERT" gedrückt wurde.
@@ -113,12 +99,12 @@ void MainWindow::insert(bool)
 void MainWindow::startExercise(bool)
 {
     if(vocRecords.size() == 0){
-        hideFrames(nothing);
+        hideFrames(Boxes::nothing);
         ui->statusBar->showMessage(tr("Error: No words in cache..."));
         return;
     }
 
-    hideFrames(learnBox);
+    hideFrames(Boxes::learnBox);
 
     this->nextVoc(true);
 }
@@ -131,6 +117,7 @@ void MainWindow::nextVoc(bool)
         ui->statusBar->showMessage(tr("New words occured reload list"), 10000);
         updateVocRecords(true);
         listIterator = 0;
+        trueIterator = vocRecords.begin();
     }
 
     if(listIterator == vocRecords.size()){
@@ -143,7 +130,7 @@ void MainWindow::nextVoc(bool)
             chopVocRecords();
         }
         else{
-            hideFrames(nothing);
+            hideFrames(Boxes::nothing);
         }
     }
 
@@ -173,24 +160,6 @@ void MainWindow::nextVoc(bool)
         ui->labelRightCount->setText("Right counter: " + vocRecords.at(listIterator).at(4));
         ui->labelWrongCount->setText("Wrong counter " + vocRecords.at(listIterator).at(5));
         listIterator += 1;
-
-        // TODO Doppeltgemoppelt?
-        // If the last record done ask the user if he wants to start over again or leave
-
-//    }
-//    else{
-//        listIterator = 0;
-//        QMessageBox box;
-//        box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-//        box.setText(tr("Congratulations!\n You've completed the list. Want some new?"));
-//        // If the "Ok" button was clicked mix the vocabulary new and start over again
-//        if(box.exec() == QMessageBox::Ok){
-//            chopVocRecords();
-//        }
-//        else{
-//            hideFrames(nothing);
-//        }
-//    }
 }
 
 // Compare if the user input is equal to the right translation, saved in "currIn"
@@ -212,16 +181,22 @@ void MainWindow::checkVoc(bool)
             ui->successLabel->setText("YEAH but also: " + buff);
         }
         else{
-            ui->successLabel->setText("YEAH!" + ui->translation->text() + tr(" war richtig :-)"));
+            ui->successLabel->setText("YEAH! " + ui->translation->text() + tr(" war richtig :-)"));
         }
+
         if(firstTry){
             //updateRank needs as second parameter the foreign word
             if(languageDirection)
                 db->updateRank(currInOrigin, currAus, true);
             else
                 db->updateRank(currInOrigin, currIn.first(), true);
+
+            QStringList record = vocRecords.at(listIterator-1);
+            record.replace(4, QString(record.at(4).toInt() + 1));
+            vocRecords.replace(listIterator-1, record);
         }
         nextVoc(false);
+
     }
     else{
         if(!currComIn.isEmpty())
@@ -233,6 +208,10 @@ void MainWindow::checkVoc(bool)
         else
             db->updateRank(currInOrigin, currIn.first(), false);
 
+        QStringList record = vocRecords.at(listIterator-1);
+        record.replace(4, "0");
+        vocRecords.replace(listIterator-1, record);
+
         firstTry = false;
     }
 }
@@ -240,7 +219,7 @@ void MainWindow::checkVoc(bool)
 // Makes the "addWidget" visible and others invisible
 void MainWindow::addVoc(bool)
 {
-   hideFrames(addBox);
+   hideFrames(Boxes::addBox);
    hideIrregular(0);
 }
 
@@ -251,6 +230,7 @@ void MainWindow::updateVocRecords(bool)
     if(vocRecords.isEmpty())
         qDebug() << "Hier, MainWindow::updateVocRecords(), ist ein Fehler passiert";
     listCount = vocRecords.count();
+    listIterator = 0;
     newWords = false;
 }
 
@@ -262,16 +242,17 @@ void MainWindow::hideFrames(Boxes number)
      ui->vocableTable->setVisible(false);
      ui->pushButtonBack->setVisible(false);
      ui->startWidget->setVisible(false);
+     ui->configWidget->setVisible(false);
 
      switch(number){
-        case addBox:
+        case Boxes::addBox:
          ui->addWidget->setVisible(true);
          ui->pushButtonBack->setVisible(true);
          ui->verticalSpacer->changeSize(-1, -1, QSizePolicy::Expanding);
          ui->verticalSpacer_2->changeSize(-1, -1, QSizePolicy::Expanding);
          ui->verticalSpacer_3->changeSize(-1, -1, QSizePolicy::Expanding);
          break;
-        case learnBox:
+        case Boxes::learnBox:
          ui->learnWidget->setVisible(true);
          ui->pushButtonBack->setVisible(true);
          ui->pushButtonBack->setGeometry(window.x() - ui->pushButtonBack->height(), window.y() - ui->pushButtonBack->width(), ui->pushButtonBack->width(), ui->pushButton->height());
@@ -279,7 +260,7 @@ void MainWindow::hideFrames(Boxes number)
          //ui->verticalSpacer_2->changeSize(-1,-1, QSizePolicy::Expanding);
          //ui->verticalSpacer_3->changeSize(-1,-1, QSizePolicy::Expanding);
          break;
-        case listBox:
+        case Boxes::listBox:
          disconnect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
          ui->vocableTable->setVisible(true);
          ui->vocableTable->setGeometry(window);
@@ -287,6 +268,10 @@ void MainWindow::hideFrames(Boxes number)
          ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Minimum);
          ui->verticalSpacer_2->changeSize(-1,-1, QSizePolicy::Minimum);
          ui->verticalSpacer_3->changeSize(-1,-1, QSizePolicy::Minimum);
+         break;
+        case Boxes::configBox:
+         ui->configWidget->setVisible(true);
+         ui->pushButtonBack->setVisible(true);
          break;
         default:
          ui->verticalSpacer->changeSize(-1,-1, QSizePolicy::Expanding);
@@ -341,23 +326,13 @@ void MainWindow::chopVocRecords()
         }
     }
     if(vocRecords.size() == 0){
-        hideFrames(nothing);
+        showStartWidget();
     }
 }
 
-//void MainWindow::resizeEvent(QResizeEvent *event){
-////    ui->centralWidget->setGeometry(this->x(),this->y(),event->size().width(),event->size().height);
-//    //ui->mainLayout->setGeometry(0, 0, event->size().width(), event->size().height());
-//    ui->mainLayout->setGeometry(QRect(0, 0, event->size().width(), event->size().height()));
-//    qDebug() << "<name>:" << "x" << "y" << "width" << "height";
-//    qDebug() << "Main Window:" << "0" << "0" << event->size().width() << event->size().height();
-//    qDebug() << "vocableTable" << ui->vocableTable->x() << ui->vocableTable->y() << ui->vocableTable->width() << ui->vocableTable->height();
-//    qDebug() << "startWidget:" << ui->startWidget->x() << ui->startWidget->y() << ui->startWidget->width() << ui->startWidget->height();
-//}
-
 void MainWindow::showStartWidget()
 {
-    hideFrames(nothing);
+    hideFrames(Boxes::nothing);
 }
 
 
@@ -410,4 +385,15 @@ void MainWindow::changedWord(int row, int column)
     }
 
     db->updateRecAusland(newText, oldIn, oldOut, column);
+
+    updateVocRecords(true);
+}
+
+void MainWindow::showConfig(bool)
+{
+    hideFrames(Boxes::configBox);
+    ui->labelSpinBox->setText(tr("Right Counter:"));
+    ui->spinBox->setValue(7);
+    ui->configCheckBox1->setText(tr("Einstellung 1"));
+    ui->configCheckBox2->setText(tr("Einstellung 2"));
 }

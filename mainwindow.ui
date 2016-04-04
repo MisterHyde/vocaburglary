@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>436</width>
-    <height>972</height>
+    <height>1051</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -39,6 +39,36 @@
        </size>
       </property>
      </spacer>
+    </item>
+    <item>
+     <widget class="QWidget" name="configWidget" native="true">
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="configCheckBox1">
+         <property name="text">
+          <string>CheckBox</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="configCheckBox2">
+         <property name="text">
+          <string>CheckBox</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelSpinBox">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spinBox"/>
+       </item>
+      </layout>
+     </widget>
     </item>
     <item>
      <widget class="QWidget" name="learnWidget" native="true">
@@ -301,6 +331,11 @@
         <string>Inländisch</string>
        </property>
       </column>
+      <column>
+       <property name="text">
+        <string>Richtig</string>
+       </property>
+      </column>
      </widget>
     </item>
     <item>
@@ -363,6 +398,13 @@
         <widget class="QPushButton" name="pushButtonExportDB">
          <property name="text">
           <string>Export to JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="pushButtonConfig">
+         <property name="text">
+          <string>Einstellungen</string>
          </property>
         </widget>
        </item>

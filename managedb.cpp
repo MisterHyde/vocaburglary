@@ -30,6 +30,11 @@ Managedb::Managedb(QWidget *parent)
     }
 }
 
+Managedb::~Managedb()
+{
+
+}
+
 // The first two parameters specifing the primary key
 // The third specify if the the attribute rightt or wrong should be incremented
 bool Managedb::updateRank(QString in, QString aus, bool right)
@@ -134,7 +139,7 @@ QList<QStringList> Managedb::getVocs()
 }
 
 // Updates the records hold in memory which changed from the database
-bool Managedb::updateRecAusland(QString newText, QString oldOut, QString oldIn, int which)
+bool Managedb::updateRecAusland(QString newText, QString oldIn, QString oldOut, int which)
 {
     QSqlQuery query;
 

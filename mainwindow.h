@@ -12,6 +12,8 @@
 #include <QResizeEvent>
 #include <iostream>
 #include <QSizePolicy>
+#include <iterator>
+#include <qiterator.h>
 #include "customfunctions.h"
 //#ifdef ANDROID
 //#include "managedjsondb.h"
@@ -32,7 +34,7 @@ public:
     ~MainWindow();
 
 private:
-    enum Boxes {nothing = -1, addBox, learnBox, listBox, buttonBox, irregularBox};
+    enum Boxes {nothing = -1, addBox, learnBox, listBox, buttonBox, irregularBox, configBox};
 
     Ui::MainWindow *ui;
 
@@ -50,6 +52,7 @@ private:
     QString currComAus;     ///< Current comment for the word in foreign language
     QString *currCorrect;	///< A pointer to the current record's indicator if the user answered it right
     int listIterator;   ///< Index of the list of voc
+    QList<QStringList>::iterator trueIterator;
     int listCount;      //!< Number of voc
     bool newWords;      //!< True if a new voc pair was insert this variable is set to true so the learning list can be updateted at runtime
     bool firstTry;      //!< True when it was the first try on a voc
@@ -59,12 +62,15 @@ private:
     QSize spacerSize;
     QSize spacerSize2;
     QSize spacerSize3;
-    bool languageDirection; ///< true if from auslandisch to inlandisch else false
+    bool languageDirection;     ///< true if from auslandisch to inlandisch else false
+    int rightCounter;       ///< Saves after how many right translations a word shouldn't be ask again; Defined through the loadConfig() and showConfig() methodes
 
     const int gap = 10;
 
     void hideFrames(Boxes number);
     void chopVocRecords();
+    void saveConfig();
+    void loadConfig();
     //void resizeEvent(QResizeEvent *event);
 
 private slots:
@@ -82,6 +88,7 @@ private slots:
     void changeLanguage(bool); ///< Change the asked language
     void updateVocRecords(bool);
     void changedWord(int row, int column); ///< Slot which writes the changed word to the datarecord
+    void showConfig(bool);
 };
 
 #endif // MAINWINDOW_H

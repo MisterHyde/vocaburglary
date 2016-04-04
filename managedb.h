@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QObject>
 #include <algorithm>
 #include <random>
 #include <chrono>
@@ -31,10 +32,11 @@ class Managedb : public QWidget
     bool insertRec(QString in, QString aus, QString commentin, QString commentaus);
     QList<QStringList> getVocs();
     bool updateRank(QString in, QString aus, bool right);
-    bool updateRecAusland(QString newText, QString oldOut, QString oldIn, int which);
+    bool updateRecAusland(QString newText, QString oldIn, QString oldOut, int which);
     int dbToJson();
     int jsonToDb();
     bool getSuccessOpening();
+    ~Managedb();
 
  private:
     QSqlDatabase db;
