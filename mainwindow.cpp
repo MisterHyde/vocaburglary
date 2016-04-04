@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     spacerSize2 = ui->verticalSpacer_2->sizeHint();
     spacerSize3 = ui->verticalSpacer_3->sizeHint();
 
+    loadConfig();
+
     db = new Managedb(this);
 
     hideFrames(Boxes::nothing);
@@ -40,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonRandomize, SIGNAL(clicked(bool)), this, SLOT(updateVocRecords(bool)));
     connect(db, SIGNAL(quit()), this, SLOT(close()));
     connect(ui->pushButtonConfig, SIGNAL(clicked(bool)), this, SLOT(showConfig(bool)));
+    connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(changedRightCounter(int)));
 }
 
 void MainWindow::showList(bool)
@@ -134,6 +137,10 @@ void MainWindow::nextVoc(bool)
         }
     }
 
+    while(vocRecords.at(listIterator).at(4).toInt() >= rightCounter){
+        listIterator += 1;
+    }
+
     firstTry = true;
     // Save the current record in the attributes
     currInOrigin = vocRecords.at(listIterator).at(0);
@@ -199,8 +206,9 @@ void MainWindow::checkVoc(bool)
 
     }
     else{
-        if(!currComIn.isEmpty())
+        if(!currComIn.isEmpty()){
             currComIn = ", " + currComIn;
+        }
         ui->successLabel->setText("Falsch: " + CustomFunctions::undoStringList(currIn) + currComIn);
         //updateRank needs as second parameter the foreign word
         if(languageDirection)
@@ -362,17 +370,22 @@ void MainWindow::changedWord(int row, int column)
     newText = ui->vocableTable->item(row, column)->text();
     // TODO Check for double commas
 
-    int index = 0;
+    int index = -1;
 
+    // Decoding between index of the vocableTable and the indexes of the vocRecords-list
+    // Must be updated if the vocableTable is changed!
     if(column == 1){
         index = 0;
     }
-    else{
+    else if(column == 0){
         index = 1;
     }
+    else if(column == 2){
+        index = 4;
+    }
 
-    oldOut = ui->vocableTable->item(row, index)->text();
-    oldIn = vocRecords.at(row).at(index);
+    oldOut = vocRecords.at(row).at(1);
+    oldIn = vocRecords.at(row).at(0);
     QStringList buff = vocRecords.at(row);
     //buff.insert(index,newText);
     buff.replace(index, newText);
@@ -393,7 +406,56 @@ void MainWindow::showConfig(bool)
 {
     hideFrames(Boxes::configBox);
     ui->labelSpinBox->setText(tr("Right Counter:"));
-    ui->spinBox->setValue(7);
+    ui->spinBox->setValue(rightCounter);
     ui->configCheckBox1->setText(tr("Einstellung 1"));
     ui->configCheckBox2->setText(tr("Einstellung 2"));
+    connect(ui->pushButtonSaveConfig, SIGNAL(clicked(bool)), this, SLOT(saveConfig(bool)));
+}
+
+void MainWindow::saveConfig(bool)
+{
+    QJsonObject config;
+    config["rightCounter"] = QString::number(ui->spinBox->value());
+    config["Config1"] = ui->configCheckBox1->isChecked()?"true":"false";
+    config["Config2"] = ui->configCheckBox2->isChecked()?"true":"false";
+    QJsonDocument jDoc(config);
+
+    QFile configFile(".vocaburglary.conf");
+
+    if(!configFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        qDebug() << "ERROR opening config file for saving";
+        return;
+    }
+
+    QTextStream out(&configFile);
+    out << jDoc.toJson();
+    out.flush();
+    configFile.close();
+}
+
+void MainWindow::loadConfig()
+{
+    QJsonDocument jDoc;
+    QJsonObject config;
+    QFile configFile(".vocaburglary.conf");
+
+    if(!configFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        qDebug() << "Fehler beim öffnen der Datei" << configFile.fileName() << "loadConfig()";
+        return;
+    }
+
+    //jDoc = QJsonDocument::fromJson(configFile.readAll());
+    QByteArray barray = configFile.readAll();
+    jDoc = QJsonDocument::fromJson(barray);
+    config = jDoc.object();
+
+    rightCounter = config["rightCounter"].toString().toInt();
+    ui->spinBox->setValue(rightCounter);
+    ui->configCheckBox1->setChecked(config["Config1"].toString()=="true"?true:false);
+    ui->configCheckBox2->setChecked(config["Config2"].toString()=="true"?true:false);
+}
+
+void MainWindow::changedRightCounter(int newRight)
+{
+    rightCounter = newRight;
 }

@@ -69,7 +69,6 @@ private:
 
     void hideFrames(Boxes number);
     void chopVocRecords();
-    void saveConfig();
     void loadConfig();
     //void resizeEvent(QResizeEvent *event);
 
@@ -89,6 +88,8 @@ private slots:
     void updateVocRecords(bool);
     void changedWord(int row, int column); ///< Slot which writes the changed word to the datarecord
     void showConfig(bool);
+    void saveConfig(bool);
+    void changedRightCounter(int newRight);
 };
 
 #endif // MAINWINDOW_H

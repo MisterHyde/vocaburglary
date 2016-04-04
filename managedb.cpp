@@ -47,7 +47,7 @@ bool Managedb::updateRank(QString in, QString aus, bool right)
         queryString = "UPDATE " + tableOneName + " SET rightt = rightt + 1 where inland = :in AND ausland = :aus;";
     }
     else{
-        queryString = "UPDATE " + tableOneName + " vocabulary SET wrong = wrong + 1 where inland = :in AND ausland = :aus;";
+        queryString = "UPDATE " + tableOneName + " vocabulary SET rightt = 0 where inland = :in AND ausland = :aus;";
     }
 
     QSqlQuery query;
@@ -101,8 +101,7 @@ QList<QStringList> Managedb::getVocs()
     QList<int> intList;
     int listCount;
 
-    QString queryText = "SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";";
-    QSqlQuery query(queryText);
+    QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";");
 
     while(query.next()) {
         record.append(query.value(0).toString());
@@ -157,10 +156,12 @@ bool Managedb::updateRecAusland(QString newText, QString oldIn, QString oldOut, 
         blubl += " SET ausland='";
     else if(which == 1)
         blubl += " SET inland='";
+    else if(which == 2)
+        blubl += " SET rightt='";
 
     blubl += newText + "' WHERE inland='" + oldIn + "' AND ausland='" + oldOut + "';";
 
-    qDebug() << "updateRecAusland: " << blubl;
+    qDebug() << "updateRecAusland(): " << blubl;
     query.exec(blubl);
 
     return query.isActive();
@@ -200,6 +201,9 @@ int Managedb::dbToJson()
 
 //    QJsonDocument jdoc(jobj);
 //    exportFile.write(jdoc.toJson());
+
+    out.flush();
+    exportFile.close();
 
     return 1;
 }
