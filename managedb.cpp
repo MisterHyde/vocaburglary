@@ -21,7 +21,10 @@ Managedb::Managedb(QString pDataDir, QWidget *parent)
     qDebug() << "Android";
 #endif
     successOpening = db.open();
-    if(!successOpening){
+    QSqlQuery query("SELECT * FROM vocabulary LIMIT 1;");
+    bool successOpeningTable = query.first();
+    qDebug() << query.first();
+    if(!successOpeningTable){
         QMessageBox msgBox;
         msgBox.setText(tr("The table couldn't be opened. If the database is running click yes to create the table"));
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -310,14 +313,15 @@ void Managedb::createDb()
         we varchar(40),\
         you2 varchar(40),\
         they varchar(40),\
-        CONSTRAINT fk_vocabulary Foreign Key(oid)  REFERENCES vocabulary(oid)\
+        CONSTRAINT fk_vocabulary Foreign Key(oid) REFERENCES vocabulary(oid)\
      );";
 #endif
 
      qDebug() << queryText1;
      QSqlQuery query(queryText1);
      qDebug() << query.exec();
-
+     QSqlQuery query(queryText2);
+     qDebug() << query.exec();
 }
 
 bool Managedb::getSuccessOpening()
