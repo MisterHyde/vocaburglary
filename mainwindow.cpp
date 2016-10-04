@@ -12,9 +12,11 @@ MainWindow::MainWindow(QWidget *parent) :
     spacerSize2 = ui->verticalSpacer_2->sizeHint();
     spacerSize3 = ui->verticalSpacer_3->sizeHint();
 
+    dataDir = "/home/felix/.local/share/vocaburglary/";
+
     loadConfig();
 
-    db = new Managedb(this);
+    db = new Managedb(dataDir, this);
 
     hideFrames(Boxes::nothing);
 
@@ -44,35 +46,43 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonConfig, SIGNAL(clicked(bool)), this, SLOT(showConfig(bool)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(changedRightCounter(int)));
     connect(ui->pushButtonShowRight, SIGNAL(clicked(bool)), this, SLOT(vocTableShowRight(bool)));
+    connect(ui->pushButtonFind, SIGNAL(clicked(bool)), this, SLOT(searchWord(bool)));
 }
 
 void MainWindow::showList(bool)
 {
+    bool localNewWords = false;
+
     if(newWords){
         updateVocRecords(true);
         newWords = false;
+        localNewWords = true;
     }
 
     hideFrames(Boxes::listBox);
 
-    // Inserts in a QTableWidget as many items as the variable 'listCount' tells
-    ui->vocableTable->setRowCount(listCount);
-    for(int i=0; i<listCount; i++){
-        QTableWidgetItem *in = new QTableWidgetItem(vocRecords.at(i).at(0));
-        QTableWidgetItem *aus = new QTableWidgetItem(vocRecords.at(i).at(1));
-        QTableWidgetItem *right = new QTableWidgetItem(vocRecords.at(i).at(4));
-        ui->vocableTable->setItem(i, 0, aus);
-        ui->vocableTable->setItem(i, 1, in);
-        ui->vocableTable->setItem(i, 2, right);
-        //qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
+    // If new words exists or the foreign2index QHash is empty populate the vocableTable and the foreigen2index
+    if(localNewWords || foreign2index.isEmpty()){
+        // Inserts in a QTableWidget as many items as the variable 'listCount' tells
+        ui->vocableTable->setRowCount(listCount);
+        for(int i=0; i<listCount; i++){
+            QTableWidgetItem *in = new QTableWidgetItem(vocRecords.at(i).at(0));
+            QTableWidgetItem *aus = new QTableWidgetItem(vocRecords.at(i).at(1));
+            QTableWidgetItem *right = new QTableWidgetItem(vocRecords.at(i).at(4));
+            ui->vocableTable->setItem(i, 0, aus);
+            ui->vocableTable->setItem(i, 1, in);
+            ui->vocableTable->setItem(i, 2, right);
+            //qDebug() << i << vocRecords.at(i).at(0) << vocRecords.at(i).at(0);
+            foreign2index.insert(vocRecords.at(i).at(1), i);
+        }
+
+        // arrange the size of the columns
+        QHeaderView* header = ui->vocableTable->horizontalHeader();
+        header->setStretchLastSection(true);
+
+        QTableWidget *tw = ui->vocableTable;
+        ui->vocableTable->setMaximumSize(CustomFunctions::myGetQTableWidgetSize(tw));
     }
-
-    // arrange the size of the columns
-    QHeaderView* header = ui->vocableTable->horizontalHeader();
-    header->setStretchLastSection(true);
-
-    QTableWidget *tw = ui->vocableTable;
-    ui->vocableTable->setMaximumSize(CustomFunctions::myGetQTableWidgetSize(tw));
 
     connect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
 }
@@ -87,16 +97,21 @@ MainWindow::~MainWindow()
 // Ruft die Methode von managedb auf, die den insert statement ausführt, und leert die Eingabefelder
 void MainWindow::insert(bool)
 {
-    //TODO If entry exists show a message on the status bar
-    bool success = db->insertRec(ui->inIn->text(), ui->inAus->text(), ui->inKommentar->text(), ui->ausKommentar->text());
+    QString success = "";
+    // TODO Just works if all words are hold in memory
+    // If the value doesn't exists insert it
+    if(foreign2index.value(ui->inAus->text(), -1) == -1)
+        success = db->insertRec(ui->inIn->text(), ui->inAus->text(), ui->inKommentar->text(), ui->ausKommentar->text());
 
-    if(success){
-        ui->inIn->setText("");
-        ui->inAus->setText("");
-        ui->inKommentar->setText("");
-        ui->ausKommentar->setText("");
-        newWords = true;
+    if(success != "success"){
+        ui->statusBar->showMessage(success, 10000);
     }
+
+    ui->inIn->setText("");
+    ui->inAus->setText("");
+    ui->inKommentar->setText("");
+    ui->ausKommentar->setText("");
+    newWords = true;
 }
 
 // Shows the exercise frame and loads the first word pair
@@ -273,7 +288,7 @@ void MainWindow::hideFrames(Boxes number)
          disconnect(ui->vocableTable, SIGNAL(cellChanged(int,int)), this, SLOT(changedWord(int,int)));
          ui->tableWidget->setVisible(true);
          ui->tableWidget->setGeometry(window);
-         ui->pushButtonShowRight->setText(tr("Show Config"));
+         ui->pushButtonShowRight->setText(tr("Show Right"));
          ui->vocableTable->hideColumn(2);
          ui->vocableTable->setGeometry(window);
          ui->pushButtonBack->setVisible(true);
@@ -419,12 +434,12 @@ void MainWindow::showConfig(bool)
 void MainWindow::saveConfig(bool)
 {
     QJsonObject config;
-    config["rightCounter"] = QString::number(ui->spinBox->value());
-    config["Config1"] = ui->configCheckBox1->isChecked()?"true":"false";
-    config["Config2"] = ui->configCheckBox2->isChecked()?"true":"false";
+    config.insert("rightCounter",QString::number(ui->spinBox->value()));
+    config.insert("Config1", QString(ui->configCheckBox1->isChecked()?"true":"false"));
+    config.insert("Config2", QString(ui->configCheckBox2->isChecked()?"true":"false"));
     QJsonDocument jDoc(config);
 
-    QFile configFile(".vocaburglary.conf");
+    QFile configFile(dataDir+"vocaburglary.conf");
 
     if(!configFile.open(QIODevice::WriteOnly | QIODevice::Text)){
         qDebug() << "ERROR opening config file for saving";
@@ -441,7 +456,7 @@ void MainWindow::loadConfig()
 {
     QJsonDocument jDoc;
     QJsonObject config;
-    QFile configFile(".vocaburglary.conf");
+    QFile configFile(dataDir+"vocaburglary.conf");
 
     if(!configFile.open(QIODevice::ReadOnly | QIODevice::Text)){
         qDebug() << "Fehler beim öffnen der Datei" << configFile.fileName() << "loadConfig()";
@@ -474,4 +489,10 @@ void MainWindow::vocTableShowRight(bool)
         ui->pushButtonShowRight->setText(tr("Show Right"));
         ui->vocableTable->hideColumn(2);
     }
+}
+
+void MainWindow::searchWord(bool)
+{
+    QString pattern = ui->searchPattern->text();
+    ui->vocableTable->selectRow(foreign2index.value(pattern, -1));
 }

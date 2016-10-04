@@ -28,8 +28,8 @@ class Managedb : public QWidget
 
  public:
     // Functions to work with a SQL database
-    explicit Managedb(QWidget *parent = 0);
-    bool insertRec(QString in, QString aus, QString commentin, QString commentaus);
+    explicit Managedb(QString pDataDir, QWidget *parent = 0);
+    QString insertRec(QString in, QString aus, QString commentin, QString commentaus);
     QList<QStringList> getVocs();
     bool updateRank(QString in, QString aus, bool right);
     bool updateRecAusland(QString newText, QString oldIn, QString oldOut, int which);
@@ -43,6 +43,7 @@ class Managedb : public QWidget
     const QString tableOneName;
     const QString tableTwoName;
     bool successOpening;
+    QString dataDir;
 private slots:
     void createDb();
 

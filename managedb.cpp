@@ -3,19 +3,22 @@
 /**
  * @brief Managedb::Managedb
  */
-Managedb::Managedb(QWidget *parent)
+Managedb::Managedb(QString pDataDir, QWidget *parent)
     :QWidget(parent),
       tableOneName("vocabulary"), tableTwoName("irregular")
 {
+    dataDir = pDataDir;
 #ifndef ANDROID
     db = QSqlDatabase::addDatabase("QPSQL");
     db.setHostName("localhost");
     db.setDatabaseName("englishdic");
     db.setUserName("felix");
     db.setPassword("Augsburg1");
+    qDebug() << "Kein Android";
 #else
     db = QSqlDatabase::addDatabase("SQLITE");
     db.setDatabaseName("./vocaburglary.db3");
+    qDebug() << "Android";
 #endif
     successOpening = db.open();
     if(!successOpening){
@@ -60,13 +63,13 @@ bool Managedb::updateRank(QString in, QString aus, bool right)
 }
 
 // Insert a new word pair with comments and set rank to zero
-bool Managedb::insertRec(QString in, QString aus, QString commentin, QString commentaus)
+QString Managedb::insertRec(QString in, QString aus, QString commentin, QString commentaus)
 {
     QVariant qvIn(in);
     QVariant qvAus(aus);
     QVariant qvComIn(commentin);
     QVariant qvComAus(commentaus);
-    bool success = false;
+    QString success = "";
 
     QSqlQuery query;
     query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
@@ -75,18 +78,18 @@ bool Managedb::insertRec(QString in, QString aus, QString commentin, QString com
     query.bindValue(QString(":ausland"), qvAus);
     query.bindValue(QString(":commentin"), qvComIn);
     query.bindValue(QString(":commentaus"), qvComAus);
-    success = query.exec();
+    query.exec()?success="success":success=query.lastError().text();
 
     //success = query.prepare("INSERT INTO " + tableOneName + " (inland, ausland, commentin, commentaus, rightt, wrong, rank) "
     //              "VALUES (" + in + "," + aus + "," + commentin + "," + commentaus + ", 0, 0 ,0)");
 
-    if(!success){
-        QSqlError err = query.lastError();
-        qDebug() << "ERROR! No success with inserting a new record";
-        qDebug() << err.text();
-        qDebug() << query.lastQuery();
-    }
-
+//    if(!success){
+//        QSqlError err = query.lastError();
+//        qDebug() << "ERROR! No success with inserting a new record";
+//        qDebug() << err.text();
+//        err.
+//        qDebug() << query.lastQuery();
+//    }
 
     return success;
 }
@@ -172,7 +175,7 @@ int Managedb::dbToJson()
     QJsonObject jobj;
     QJsonArray jsonArr;
     QSqlQuery query("SELECT inland,ausland,commentin,commentaus,rightt,wrong FROM " + tableOneName + ";");
-    QFile exportFile("vocabulary.json");
+    QFile exportFile(dataDir+"vocabulary.json");
 
     if(!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)){
         qDebug() << "Couldn't open save file. (Managedb::dbToJson())";

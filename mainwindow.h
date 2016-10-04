@@ -14,6 +14,7 @@
 #include <QSizePolicy>
 #include <iterator>
 #include <qiterator.h>
+#include <QHash>
 #include "customfunctions.h"
 //#ifdef ANDROID
 //#include "managedjsondb.h"
@@ -64,6 +65,8 @@ private:
     QSize spacerSize3;
     bool languageDirection;     ///< true if from auslandisch to inlandisch else false
     int rightCounter;       ///< Saves after how many right translations a word shouldn't be ask again; Defined through the loadConfig() and showConfig() methodes
+    QString dataDir;
+    QHash<QString,int> foreign2index;
 
     const int gap = 10;
 
@@ -91,6 +94,7 @@ private slots:
     void saveConfig(bool);
     void changedRightCounter(int newRight);
     void vocTableShowRight(bool);
+    void searchWord(bool);	///< Slot connected to the Find-button in the table view
 };
 
 #endif // MAINWINDOW_H
